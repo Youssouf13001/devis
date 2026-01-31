@@ -35,13 +35,12 @@ const Login = () => {
       {/* Left side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
-              <FileText className="text-white" size={24} />
-            </div>
-            <span className="font-extrabold text-2xl text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              DevisPro
-            </span>
+          <div className="flex items-center justify-center mb-8">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/7xmtrxds_Nvo%20logo%20Creativindustry%20France.png" 
+              alt="CREATIVINDUSTRY France" 
+              className="h-16 object-contain"
+            />
           </div>
 
           <Card className="border-0 shadow-none">
