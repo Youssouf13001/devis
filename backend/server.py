@@ -558,7 +558,8 @@ def generate_quote_pdf(quote: dict, company: dict) -> bytes:
     try:
         logo_data = urllib.request.urlopen(logo_url, timeout=5).read()
         logo_buffer = BytesIO(logo_data)
-        logo_img = Image(logo_buffer, width=55*mm, height=20*mm)
+        # Keep aspect ratio - width 40mm, height auto-calculated
+        logo_img = Image(logo_buffer, width=40*mm, height=25*mm, kind='proportional')
     except:
         pass
     
