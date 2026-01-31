@@ -16,8 +16,13 @@ import bcrypt
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 import base64
-from weasyprint import HTML, CSS
 from io import BytesIO
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -506,37 +511,101 @@ async def delete_quote(quote_id: str, user: dict = Depends(get_current_user)):
 # ============ PDF GENERATION ============
 
 def generate_quote_pdf(quote: dict, company: dict) -> bytes:
-    """Generate PDF from quote data"""
+    """Generate PDF from quote data using reportlab"""
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=15*mm, bottomMargin=15*mm)
+    
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor('#0066cc'), spaceAfter=10)
+    header_style = ParagraphStyle('Header', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#333333'))
+    section_title = ParagraphStyle('Section', parent=styles['Heading2'], fontSize=11, textColor=colors.HexColor('#0066cc'), spaceBefore=15, spaceAfter=5)
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=9)
+    small_style = ParagraphStyle('Small', parent=styles['Normal'], fontSize=8, textColor=colors.HexColor('#666666'))
+    
+    elements = []
     
     # Format numbers
     def fmt_price(val):
-        return f"{val:,.2f}".replace(",", " ").replace(".", ",") + " €"
+        return f"{val:,.2f} €".replace(",", " ").replace(".", ",").replace(" ", " ")
     
     def fmt_date(date_str):
         try:
             d = datetime.strptime(date_str, "%Y-%m-%d")
-            months = ["janvier", "février", "mars", "avril", "mai", "juin",
-                      "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+            months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
             return f"{d.day} {months[d.month-1]} {d.year}"
         except:
             return date_str
     
-    # Build items table
-    items_html = ""
+    # Header with company info
+    company_name = company.get('name', 'CREATIVINDUSTRY')
+    company_info = f"""{company.get('address', '')}<br/>
+Email: {company.get('email', '')}<br/>
+Tél: {company.get('phone', '')}<br/>
+{company.get('status', '')} - SIREN: {company.get('siren', '')}<br/>
+N° TVA: {company.get('tva_number', '')}"""
+    
+    quote_info = f"""<b>DEVIS</b><br/>
+N°: {quote['quote_number']}<br/>
+Date: {fmt_date(quote['emission_date'])}<br/>
+Validité: {fmt_date(quote['expiration_date'])}<br/>
+Type: Prestations de services"""
+    
+    header_data = [
+        [Paragraph(f"<b>{company_name}</b>", title_style), Paragraph(quote_info, header_style)],
+        [Paragraph(company_info, small_style), '']
+    ]
+    header_table = Table(header_data, colWidths=[120*mm, 50*mm])
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LINEBELOW', (0, 1), (-1, 1), 2, colors.HexColor('#0066cc')),
+        ('BOTTOMPADDING', (0, 1), (-1, 1), 10),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 10*mm))
+    
+    # Client section
+    elements.append(Paragraph("Client ou Cliente", section_title))
+    client_info = f"""<b>{quote['client_name']}</b><br/>
+{quote['client_address']}<br/>
+Email: {quote['client_email']}<br/>
+Tél: {quote['client_phone']}"""
+    elements.append(Paragraph(client_info, normal_style))
+    elements.append(Spacer(1, 8*mm))
+    
+    # Items table
+    elements.append(Paragraph("Détail des prestations", section_title))
+    
+    items_data = [['Produits', 'Qté', 'Prix unitaire HT', 'TVA (%)', 'Total HT']]
     for item in quote['items']:
         total_ht = item['quantity'] * item['price_ht']
         tva_text = f"{item['tva_rate']}%" if item['tva_rate'] > 0 else "Aucune"
-        items_html += f"""
-        <tr>
-            <td class="item-name">{item['service_name']}</td>
-            <td class="item-qty">{item['quantity']} {item['unit']}</td>
-            <td class="item-price">{fmt_price(item['price_ht'])}</td>
-            <td class="item-tva">{tva_text}</td>
-            <td class="item-total">{fmt_price(total_ht)}</td>
-        </tr>
-        """
+        items_data.append([
+            item['service_name'],
+            f"{item['quantity']} {item['unit']}",
+            fmt_price(item['price_ht']),
+            tva_text,
+            fmt_price(total_ht)
+        ])
+    
+    items_table = Table(items_data, colWidths=[60*mm, 25*mm, 35*mm, 20*mm, 30*mm])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0066cc')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 8*mm))
     
     # TVA details
+    elements.append(Paragraph("Détails TVA", section_title))
     tva_details = {}
     for item in quote['items']:
         rate = item['tva_rate']
@@ -547,296 +616,68 @@ def generate_quote_pdf(quote: dict, company: dict) -> bytes:
         tva_details[rate]["base"] += base
         tva_details[rate]["amount"] += tva_amount
     
-    tva_rows = ""
+    tva_data = [['Taux', 'Montant TVA', 'Base HT']]
     for rate, vals in tva_details.items():
         tva_text = f"{rate}%" if rate > 0 else "Aucune"
-        tva_rows += f"""
-        <tr>
-            <td>{tva_text}</td>
-            <td>{fmt_price(vals['amount'])}</td>
-            <td>{fmt_price(vals['base'])}</td>
-        </tr>
-        """
+        tva_data.append([tva_text, fmt_price(vals['amount']), fmt_price(vals['base'])])
     
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            @page {{
-                size: A4;
-                margin: 15mm;
-            }}
-            * {{
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }}
-            body {{
-                font-family: 'Helvetica Neue', Arial, sans-serif;
-                font-size: 10pt;
-                line-height: 1.4;
-                color: #1a1a1a;
-            }}
-            .container {{
-                padding: 10mm;
-            }}
-            .header {{
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 2px solid #0066cc;
-            }}
-            .company-info {{
-                max-width: 60%;
-            }}
-            .company-name {{
-                font-size: 18pt;
-                font-weight: bold;
-                color: #0066cc;
-                margin-bottom: 8px;
-            }}
-            .company-details {{
-                font-size: 9pt;
-                color: #555;
-                line-height: 1.6;
-            }}
-            .quote-box {{
-                background: #f8f9fa;
-                padding: 15px;
-                border-radius: 5px;
-                min-width: 200px;
-            }}
-            .quote-title {{
-                font-size: 14pt;
-                font-weight: bold;
-                color: #0066cc;
-                margin-bottom: 10px;
-            }}
-            .quote-details {{
-                font-size: 9pt;
-            }}
-            .quote-details strong {{
-                color: #333;
-            }}
-            .section {{
-                margin: 20px 0;
-            }}
-            .section-title {{
-                font-size: 11pt;
-                font-weight: bold;
-                color: #0066cc;
-                margin-bottom: 10px;
-                padding-bottom: 5px;
-                border-bottom: 1px solid #ddd;
-            }}
-            .client-info {{
-                background: #f8f9fa;
-                padding: 15px;
-                border-radius: 5px;
-                font-size: 10pt;
-            }}
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin: 10px 0;
-            }}
-            th {{
-                background: #0066cc;
-                color: white;
-                padding: 10px 8px;
-                text-align: left;
-                font-size: 9pt;
-                font-weight: 600;
-            }}
-            td {{
-                padding: 10px 8px;
-                border-bottom: 1px solid #eee;
-                font-size: 9pt;
-            }}
-            tr:nth-child(even) {{
-                background: #f9f9f9;
-            }}
-            .item-name {{
-                width: 35%;
-            }}
-            .item-qty, .item-price, .item-tva, .item-total {{
-                text-align: right;
-            }}
-            .totals-section {{
-                margin-top: 20px;
-                display: flex;
-                justify-content: flex-end;
-            }}
-            .totals-box {{
-                width: 300px;
-            }}
-            .total-row {{
-                display: flex;
-                justify-content: space-between;
-                padding: 8px 0;
-                border-bottom: 1px solid #eee;
-            }}
-            .total-row.final {{
-                font-size: 12pt;
-                font-weight: bold;
-                color: #0066cc;
-                border-top: 2px solid #0066cc;
-                border-bottom: none;
-                padding-top: 12px;
-            }}
-            .payment-section {{
-                margin-top: 30px;
-                padding: 15px;
-                background: #f8f9fa;
-                border-radius: 5px;
-            }}
-            .payment-title {{
-                font-weight: bold;
-                color: #0066cc;
-                margin-bottom: 10px;
-            }}
-            .conditions {{
-                margin-top: 20px;
-                font-size: 8pt;
-                color: #666;
-                line-height: 1.6;
-            }}
-            .signature-section {{
-                margin-top: 30px;
-                padding: 20px;
-                border: 1px dashed #ccc;
-                border-radius: 5px;
-            }}
-            .signature-title {{
-                font-size: 9pt;
-                color: #666;
-                margin-bottom: 60px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div class="company-info">
-                    <div class="company-name">{company.get('name', 'CREATIVINDUSTRY')}</div>
-                    <div class="company-details">
-                        {company.get('address', '')}<br>
-                        Email: {company.get('email', '')}<br>
-                        Tél: {company.get('phone', '')}<br>
-                        {company.get('status', '')} - SIREN: {company.get('siren', '')}<br>
-                        N° TVA: {company.get('tva_number', '')}
-                    </div>
-                </div>
-                <div class="quote-box">
-                    <div class="quote-title">DEVIS</div>
-                    <div class="quote-details">
-                        <strong>N°:</strong> {quote['quote_number']}<br>
-                        <strong>Date:</strong> {fmt_date(quote['emission_date'])}<br>
-                        <strong>Validité:</strong> {fmt_date(quote['expiration_date'])}<br>
-                        <strong>Type:</strong> Prestations de services
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">Client ou Cliente</div>
-                <div class="client-info">
-                    <strong>{quote['client_name']}</strong><br>
-                    {quote['client_address']}<br>
-                    Email: {quote['client_email']}<br>
-                    Tél: {quote['client_phone']}
-                </div>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">Détail des prestations</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="item-name">Produits</th>
-                            <th class="item-qty">Qté</th>
-                            <th class="item-price">Prix unitaire HT</th>
-                            <th class="item-tva">TVA (%)</th>
-                            <th class="item-total">Total HT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {items_html}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="section">
-                <div class="section-title">Détails TVA</div>
-                <table style="width: 50%;">
-                    <thead>
-                        <tr>
-                            <th>Taux</th>
-                            <th>Montant TVA</th>
-                            <th>Base HT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tva_rows}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="totals-section">
-                <div class="totals-box">
-                    <div class="total-row">
-                        <span>Total HT avant remise</span>
-                        <span>{fmt_price(quote['total_ht_before_discount'])}</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Remise</span>
-                        <span>{fmt_price(quote['discount'])}</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Total HT</span>
-                        <span>{fmt_price(quote['total_ht'])}</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Total TVA</span>
-                        <span>{fmt_price(quote['total_tva'])}</span>
-                    </div>
-                    <div class="total-row final">
-                        <span>Total TTC</span>
-                        <span>{fmt_price(quote['total_ttc'])}</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="payment-section">
-                <div class="payment-title">Informations de paiement</div>
-                <div>
-                    Établissement: {company.get('bank_name', 'QONTO')}<br>
-                    IBAN: {company.get('iban', '')}<br>
-                    BIC: {company.get('bic', '')}
-                </div>
-            </div>
-            
-            <div class="conditions">
-                <strong>Conditions:</strong><br>
-                Pénalités de retard: trois fois le taux annuel d'intérêt légal en vigueur calculé depuis la date d'échéance jusqu'à complet paiement du prix.<br>
-                Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement: 40 €
-            </div>
-            
-            <div class="signature-section">
-                <div class="signature-title">
-                    Date et signature précédées de la mention "Bon pour accord"
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+    tva_table = Table(tva_data, colWidths=[40*mm, 40*mm, 40*mm])
+    tva_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0066cc')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(tva_table)
+    elements.append(Spacer(1, 8*mm))
     
-    pdf_bytes = HTML(string=html_content).write_pdf()
-    return pdf_bytes
+    # Totals
+    totals_data = [
+        ['Total HT avant remise', fmt_price(quote['total_ht_before_discount'])],
+        ['Remise', fmt_price(quote['discount'])],
+        ['Total HT', fmt_price(quote['total_ht'])],
+        ['Total TVA', fmt_price(quote['total_tva'])],
+        ['Total TTC', fmt_price(quote['total_ttc'])],
+    ]
+    
+    totals_table = Table(totals_data, colWidths=[120*mm, 50*mm])
+    totals_table.setStyle(TableStyle([
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('LINEBELOW', (0, 0), (-1, 3), 0.5, colors.HexColor('#eeeeee')),
+        ('LINEABOVE', (0, 4), (-1, 4), 2, colors.HexColor('#0066cc')),
+        ('FONTSIZE', (0, 4), (-1, 4), 11),
+        ('TEXTCOLOR', (0, 4), (-1, 4), colors.HexColor('#0066cc')),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(totals_table)
+    elements.append(Spacer(1, 10*mm))
+    
+    # Payment info
+    elements.append(Paragraph("Informations de paiement", section_title))
+    payment_info = f"""Établissement: {company.get('bank_name', 'QONTO')}<br/>
+IBAN: {company.get('iban', '')}<br/>
+BIC: {company.get('bic', '')}"""
+    elements.append(Paragraph(payment_info, normal_style))
+    elements.append(Spacer(1, 8*mm))
+    
+    # Conditions
+    elements.append(Paragraph("Conditions", section_title))
+    conditions = """Pénalités de retard: trois fois le taux annuel d'intérêt légal en vigueur calculé depuis la date d'échéance jusqu'à complet paiement du prix.<br/>
+Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement: 40 €"""
+    elements.append(Paragraph(conditions, small_style))
+    elements.append(Spacer(1, 10*mm))
+    
+    # Signature
+    elements.append(Paragraph('Date et signature précédées de la mention "Bon pour accord"', small_style))
+    elements.append(Spacer(1, 20*mm))
+    
+    doc.build(elements)
+    return buffer.getvalue()
 
 @api_router.get("/quotes/{quote_id}/pdf")
 async def get_quote_pdf(quote_id: str, user: dict = Depends(get_current_user)):
