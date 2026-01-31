@@ -751,6 +751,234 @@ Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement :
     doc.build(elements)
     return buffer.getvalue()
 
+def generate_invoice_pdf(invoice: dict, company: dict) -> bytes:
+    """Generate PDF for invoice with acompte/payment details"""
+    import urllib.request
+    from reportlab.platypus import Image, HRFlowable
+    
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=15*mm, leftMargin=15*mm, topMargin=15*mm, bottomMargin=15*mm)
+    
+    # Colors
+    NAVY = colors.HexColor('#1e3a5f')
+    GREEN = colors.HexColor('#059669')
+    ORANGE = colors.HexColor('#d97706')
+    LIGHT_GRAY = colors.HexColor('#f5f5f5')
+    BORDER_GRAY = colors.HexColor('#cccccc')
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=14, textColor=NAVY, spaceAfter=8, fontName='Helvetica-Bold')
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=9, textColor=colors.black)
+    small_style = ParagraphStyle('Small', parent=styles['Normal'], fontSize=7, textColor=colors.HexColor('#666666'))
+    section_title = ParagraphStyle('Section', parent=styles['Heading2'], fontSize=10, textColor=NAVY, spaceBefore=10, spaceAfter=5, fontName='Helvetica-Bold')
+    
+    elements = []
+    
+    def fmt_price(val):
+        return f"{val:,.2f} €".replace(",", " ").replace(".", ",").replace(" ", " ")
+    
+    def fmt_date(date_str):
+        if not date_str:
+            return ""
+        try:
+            d = datetime.strptime(date_str, "%Y-%m-%d")
+            months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+            return f"{d.day} {months[d.month-1]} {d.year}"
+        except:
+            return date_str
+    
+    # Load logo
+    logo_url = "https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/ml5zhjie_Nvo%20logo%20Creativindustry%20France.png"
+    logo_img = None
+    try:
+        logo_data = urllib.request.urlopen(logo_url, timeout=5).read()
+        logo_buffer = BytesIO(logo_data)
+        logo_img = Image(logo_buffer, width=40*mm, height=25*mm, kind='proportional')
+    except:
+        pass
+    
+    # ===== HEADER =====
+    company_name = company.get('name', 'CREATIVINDUSTRY')
+    company_box = f"""<font size="7" color="#888888">Émetteur ou Émettrice</font><br/>
+<b>{company_name}</b><br/>
+{company.get('address', '')}<br/>
+{company.get('email', '')}<br/>
+{company.get('phone', '')}"""
+    
+    if logo_img:
+        header_data = [[logo_img, '', Paragraph(company_box, normal_style)]]
+        header_table = Table(header_data, colWidths=[50*mm, 40*mm, 90*mm])
+    else:
+        header_data = [['', Paragraph(company_box, normal_style)]]
+        header_table = Table(header_data, colWidths=[90*mm, 90*mm])
+    
+    header_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOX', (-1, 0), (-1, 0), 0.5, BORDER_GRAY),
+        ('TOPPADDING', (-1, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (-1, 0), (-1, 0), 8),
+        ('LEFTPADDING', (-1, 0), (-1, 0), 8),
+    ]))
+    elements.append(header_table)
+    elements.append(Spacer(1, 8*mm))
+    
+    # ===== FACTURE INFO + CLIENT =====
+    invoice_info = f"""<b><font size="14" color="#1e3a5f">FACTURE</font></b><br/><br/>
+<b>Numéro</b>          {invoice['invoice_number']}<br/>
+<b>Date d'émission</b>    {fmt_date(invoice['emission_date'])}<br/>
+<b>Date d'échéance</b>    {fmt_date(invoice['due_date'])}<br/>
+<b>Devis d'origine</b>    {invoice.get('quote_id', '-')[:8]}..."""
+    
+    client_box = f"""<font size="7" color="#888888">Client ou Cliente</font><br/>
+<b>{invoice['client_name']}</b><br/>
+{invoice['client_address']}<br/>
+{invoice['client_email']}<br/>
+{invoice['client_phone']}"""
+    
+    info_data = [[Paragraph(invoice_info, normal_style), Paragraph(client_box, normal_style)]]
+    info_table = Table(info_data, colWidths=[90*mm, 90*mm])
+    info_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BOX', (1, 0), (1, 0), 0.5, BORDER_GRAY),
+        ('TOPPADDING', (1, 0), (1, 0), 8),
+        ('BOTTOMPADDING', (1, 0), (1, 0), 8),
+        ('LEFTPADDING', (1, 0), (1, 0), 8),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 6*mm))
+    
+    # ===== ITEMS TABLE =====
+    items_data = [['Désignation', 'Qté', 'Prix u. HT', 'TVA', 'Total HT']]
+    for item in invoice['items']:
+        total_ht = item['quantity'] * item['price_ht']
+        tva_text = f"{item['tva_rate']}%" if item['tva_rate'] > 0 else "Exonéré"
+        items_data.append([
+            Paragraph(f"<b>{item['service_name']}</b>", normal_style),
+            f"{item['quantity']} {item['unit']}",
+            fmt_price(item['price_ht']),
+            tva_text,
+            fmt_price(total_ht)
+        ])
+    
+    items_table = Table(items_data, colWidths=[60*mm, 25*mm, 35*mm, 25*mm, 35*mm])
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), NAVY),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (2, -1), 'RIGHT'),
+        ('ALIGN', (4, 1), (4, -1), 'RIGHT'),
+        ('BOX', (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+        ('INNERGRID', (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 6*mm))
+    
+    # ===== TOTALS =====
+    totals_data = [
+        ['Total HT', fmt_price(invoice['total_ht'])],
+        ['Total TVA', fmt_price(invoice['total_tva'])],
+        ['Total TTC', fmt_price(invoice['total_ttc'])],
+    ]
+    
+    totals_table = Table(totals_data, colWidths=[100*mm, 80*mm])
+    totals_table.setStyle(TableStyle([
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('LINEBELOW', (0, 0), (-1, 1), 0.5, BORDER_GRAY),
+        ('BACKGROUND', (0, 2), (-1, 2), NAVY),
+        ('TEXTCOLOR', (0, 2), (-1, 2), colors.white),
+        ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(totals_table)
+    elements.append(Spacer(1, 8*mm))
+    
+    # ===== ACOMPTES / PAIEMENTS =====
+    payments = invoice.get('payments', [])
+    acompte = invoice.get('acompte', 0)
+    reste = invoice.get('reste_a_payer', invoice['total_ttc'])
+    
+    if payments or acompte > 0:
+        elements.append(Paragraph("<b>RÈGLEMENTS</b>", section_title))
+        
+        payment_rows = [['Date', 'Mode', 'Montant', 'Notes']]
+        for p in payments:
+            payment_rows.append([
+                fmt_date(p.get('payment_date', '')),
+                p.get('payment_method', 'Virement').capitalize(),
+                fmt_price(p.get('amount', 0)),
+                p.get('notes', '-') or '-'
+            ])
+        
+        payment_table = Table(payment_rows, colWidths=[40*mm, 40*mm, 40*mm, 60*mm])
+        payment_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#059669')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
+            ('BOX', (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+            ('INNERGRID', (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ]))
+        elements.append(payment_table)
+        elements.append(Spacer(1, 4*mm))
+    
+    # ===== SOLDE BOX =====
+    solde_data = [
+        ['Total facture:', fmt_price(invoice['total_ttc'])],
+        ['Acompte(s) reçu(s):', fmt_price(acompte)],
+        ['RESTE À PAYER:', fmt_price(reste)],
+    ]
+    
+    solde_table = Table(solde_data, colWidths=[100*mm, 80*mm])
+    solde_table.setStyle(TableStyle([
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('LINEBELOW', (0, 0), (-1, 1), 0.5, BORDER_GRAY),
+        ('TEXTCOLOR', (0, 1), (-1, 1), GREEN),
+        ('BACKGROUND', (0, 2), (-1, 2), ORANGE),
+        ('TEXTCOLOR', (0, 2), (-1, 2), colors.white),
+        ('FONTNAME', (0, 2), (-1, 2), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 2), (-1, 2), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements.append(solde_table)
+    elements.append(Spacer(1, 8*mm))
+    
+    # ===== BANK INFO =====
+    elements.append(Paragraph("<b>COORDONNÉES BANCAIRES</b>", section_title))
+    bank_info = f"""<b>Établissement</b>     {company.get('bank_name', 'QONTO')}<br/>
+<b>IBAN</b>              {company.get('iban', '')}<br/>
+<b>BIC</b>               {company.get('bic', '')}"""
+    
+    bank_data = [[Paragraph(bank_info, normal_style)]]
+    bank_table = Table(bank_data, colWidths=[180*mm])
+    bank_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(bank_table)
+    elements.append(Spacer(1, 6*mm))
+    
+    # ===== CONDITIONS =====
+    conditions = """Pénalités de retard : trois fois le taux annuel d'intérêt légal. Indemnité forfaitaire pour frais de recouvrement : 40 €"""
+    elements.append(Paragraph(conditions, small_style))
+    
+    doc.build(elements)
+    return buffer.getvalue()
+
 @api_router.get("/quotes/{quote_id}/pdf")
 async def get_quote_pdf(quote_id: str, user: dict = Depends(get_current_user)):
     quote = await db.quotes.find_one({"id": quote_id, "user_id": user['id']}, {"_id": 0})
