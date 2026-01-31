@@ -388,11 +388,11 @@ const QuoteEditor = () => {
                 {/* Header - Logo + Company Info */}
                 <div className="flex justify-between mb-6">
                   {/* Logo */}
-                  <div className="w-1/3">
+                  <div className="w-1/3 bg-black p-3 rounded">
                     <img 
-                      src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/qzra2tuw_logo%20entourer.png" 
-                      alt="CREATIVINDUSTRY" 
-                      className="w-32 h-auto object-contain"
+                      src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/ml5zhjie_Nvo%20logo%20Creativindustry%20France.png" 
+                      alt="CREATIVINDUSTRY France" 
+                      className="w-full h-auto object-contain"
                     />
                   </div>
                   {/* Company Info Box */}
