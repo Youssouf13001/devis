@@ -444,6 +444,7 @@ async def create_quote(quote: QuoteCreate, user: dict = Depends(get_current_user
         "client_phone": client['phone'],
         "emission_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "expiration_date": quote.expiration_date,
+        "event_date": quote.event_date,
         "items": [item.model_dump() for item in quote.items],
         "total_ht_before_discount": total_ht_before_discount,
         "discount": quote.discount,
