@@ -880,6 +880,9 @@ async def convert_quote_to_invoice(quote_id: str, user: dict = Depends(get_curre
         "total_ht": quote['total_ht'],
         "total_tva": quote['total_tva'],
         "total_ttc": quote['total_ttc'],
+        "acompte": 0.0,
+        "reste_a_payer": quote['total_ttc'],
+        "payments": [],
         "status": "en attente",
         "created_at": datetime.now(timezone.utc).isoformat()
     }
