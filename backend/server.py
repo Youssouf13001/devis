@@ -904,6 +904,27 @@ async def get_invoice(invoice_id: str, user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Facture non trouvée")
     return InvoiceResponse(**invoice)
 
+@api_router.get("/invoices/{invoice_id}/pdf")
+async def get_invoice_pdf(invoice_id: str, user: dict = Depends(get_current_user)):
+    """Generate PDF for invoice with acompte details"""
+    invoice = await db.invoices.find_one({"id": invoice_id, "user_id": user['id']}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    company = await db.company_settings.find_one({"user_id": user['id']}, {"_id": 0})
+    if not company:
+        company = CompanySettings(user_id=user['id']).model_dump()
+    
+    pdf_bytes = generate_invoice_pdf(invoice, company)
+    
+    filename = f"Facture-{invoice['client_name']}-{invoice['invoice_number']}.pdf"
+    
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
 @api_router.put("/invoices/{invoice_id}/status")
 async def update_invoice_status(invoice_id: str, status: str, user: dict = Depends(get_current_user)):
     valid_statuses = ["en attente", "payée", "annulée", "partiellement payée"]
