@@ -377,28 +377,33 @@ const QuoteEditor = () => {
 
         {/* Preview Section */}
         <div className="lg:sticky lg:top-8 h-fit">
-          <Card className="bg-slate-100 border-0">
+          <Card className="bg-amber-100/50 border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <CardTitle className="flex items-center gap-2 text-amber-700" style={{ fontFamily: 'Manrope' }}>
                 <Eye size={20} /> Aperçu
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-white shadow-lg border border-slate-200 p-8 text-sm" style={{ aspectRatio: '210/297', overflow: 'auto' }}>
-                {/* Company Header */}
-                <div className="flex justify-between mb-6 pb-4 border-b-2 border-blue-600">
-                  <div>
-                    <h2 className="text-lg font-bold text-blue-600" style={{ fontFamily: 'Manrope' }}>
+              <div className="bg-white shadow-lg border border-amber-200 p-6 text-sm" style={{ aspectRatio: '210/297', overflow: 'auto' }}>
+                {/* Company Header with Logo */}
+                <div className="flex items-start gap-4 mb-6 pb-4 border-b-2 border-amber-600">
+                  <img 
+                    src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/qzra2tuw_logo%20entourer.png" 
+                    alt="Logo" 
+                    className="w-16 h-16 object-contain"
+                  />
+                  <div className="flex-1">
+                    <h2 className="text-base font-bold text-amber-700" style={{ fontFamily: 'Manrope' }}>
                       {company?.name || 'CREATIVINDUSTRY'}
                     </h2>
-                    <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+                    <div className="text-xs text-stone-500 mt-1 space-y-0.5">
                       <p>{company?.address}</p>
                       <p>{company?.email}</p>
                       <p>{company?.phone}</p>
                     </div>
                   </div>
-                  <div className="text-right bg-slate-50 p-3 rounded">
-                    <h3 className="text-blue-600 font-bold">DEVIS</h3>
+                  <div className="text-right bg-amber-50 p-3 rounded">
+                    <h3 className="text-amber-700 font-bold">DEVIS</h3>
                     <p className="text-xs mt-1"><strong>Date:</strong> {formatDate(new Date().toISOString().split('T')[0])}</p>
                     <p className="text-xs"><strong>Validité:</strong> {formatDate(formData.expiration_date)}</p>
                   </div>
@@ -406,24 +411,29 @@ const QuoteEditor = () => {
 
                 {/* Client */}
                 {selectedClient && (
-                  <div className="mb-6">
-                    <h4 className="text-blue-600 font-semibold text-xs mb-2">Client</h4>
-                    <div className="bg-slate-50 p-3 rounded text-xs">
+                  <div className="mb-4">
+                    <h4 className="text-amber-700 font-semibold text-xs mb-2">CLIENT</h4>
+                    <div className="bg-amber-50 p-3 rounded text-xs">
                       <p className="font-semibold">{selectedClient.name}</p>
                       <p>{selectedClient.address}</p>
                       <p>{selectedClient.email}</p>
                     </div>
+                    {formData.event_date && (
+                      <p className="mt-2 text-xs font-semibold text-amber-700">
+                        Date de l'événement: {formatDate(formData.event_date)}
+                      </p>
+                    )}
                   </div>
                 )}
 
                 {/* Items Table */}
                 {formData.items.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-blue-600 font-semibold text-xs mb-2">Prestations</h4>
+                  <div className="mb-4">
+                    <h4 className="text-amber-700 font-semibold text-xs mb-2">PRESTATIONS</h4>
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-blue-600 text-white">
-                          <th className="p-2 text-left">Produit</th>
+                        <tr className="bg-amber-600 text-white">
+                          <th className="p-2 text-left">Désignation</th>
                           <th className="p-2 text-right">Qté</th>
                           <th className="p-2 text-right">Prix HT</th>
                           <th className="p-2 text-right">Total HT</th>
@@ -431,7 +441,7 @@ const QuoteEditor = () => {
                       </thead>
                       <tbody>
                         {formData.items.map((item, idx) => (
-                          <tr key={idx} className="border-b border-slate-100">
+                          <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/50'}>
                             <td className="p-2">{item.service_name || '-'}</td>
                             <td className="p-2 text-right">{item.quantity} {item.unit}</td>
                             <td className="p-2 text-right font-mono">{formatCurrency(item.price_ht)}</td>
