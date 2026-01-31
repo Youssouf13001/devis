@@ -56,10 +56,12 @@ const Layout = () => {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="h-16 flex items-center px-6 border-b border-slate-200">
-            <span className="font-extrabold text-xl text-slate-900" style={{ fontFamily: 'Manrope' }}>
-              DevisPro
-            </span>
+          <div className="h-16 flex items-center justify-center px-4 border-b border-slate-200 bg-black">
+            <img 
+              src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/7xmtrxds_Nvo%20logo%20Creativindustry%20France.png" 
+              alt="CREATIVINDUSTRY France" 
+              className="h-12 object-contain"
+            />
           </div>
 
           {/* Navigation */}
