@@ -1086,7 +1086,8 @@ async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dic
         )
         return {"message": "Devis envoyé avec succès", "status": "success"}
     else:
-        raise HTTPException(status_code=500, detail="Erreur lors de l'envoi de l'email")
+        error_msg = result.get("error", "Erreur lors de l'envoi de l'email")
+        raise HTTPException(status_code=400, detail=error_msg)
 
 # ============ INVOICES ROUTES ============
 
