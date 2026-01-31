@@ -44,7 +44,11 @@ const Layout = () => {
         >
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-        <span className="font-bold text-lg text-slate-900" style={{ fontFamily: 'Manrope' }}>DevisPro</span>
+        <img 
+          src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/7xmtrxds_Nvo%20logo%20Creativindustry%20France.png" 
+          alt="CREATIVINDUSTRY" 
+          className="h-8 object-contain"
+        />
         <div className="w-10" />
       </div>
 
