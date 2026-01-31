@@ -53,6 +53,7 @@ const QuoteEditor = () => {
         setFormData({
           client_id: quote.client_id,
           expiration_date: quote.expiration_date,
+          event_date: quote.event_date || "",
           items: quote.items,
           discount: quote.discount,
           notes: quote.notes || ""
