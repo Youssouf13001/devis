@@ -377,74 +377,81 @@ const QuoteEditor = () => {
 
         {/* Preview Section */}
         <div className="lg:sticky lg:top-8 h-fit">
-          <Card className="bg-amber-100/50 border-0">
+          <Card className="bg-slate-100 border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-700" style={{ fontFamily: 'Manrope' }}>
+              <CardTitle className="flex items-center gap-2 text-slate-700" style={{ fontFamily: 'Manrope' }}>
                 <Eye size={20} /> Aperçu
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-white shadow-lg border border-amber-200 p-6 text-sm" style={{ aspectRatio: '210/297', overflow: 'auto' }}>
-                {/* Company Header with Logo */}
-                <div className="flex items-start gap-4 mb-6 pb-4 border-b-2 border-amber-600">
-                  <img 
-                    src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/qzra2tuw_logo%20entourer.png" 
-                    alt="Logo" 
-                    className="w-16 h-16 object-contain"
-                  />
-                  <div className="flex-1">
-                    <h2 className="text-base font-bold text-amber-700" style={{ fontFamily: 'Manrope' }}>
-                      {company?.name || 'CREATIVINDUSTRY'}
-                    </h2>
-                    <div className="text-xs text-stone-500 mt-1 space-y-0.5">
-                      <p>{company?.address}</p>
-                      <p>{company?.email}</p>
-                      <p>{company?.phone}</p>
-                    </div>
+              <div className="bg-white shadow-lg border border-slate-200 p-6 text-sm" style={{ aspectRatio: '210/297', overflow: 'auto' }}>
+                {/* Header - Logo + Company Info */}
+                <div className="flex justify-between mb-6">
+                  {/* Logo */}
+                  <div className="w-1/3">
+                    <img 
+                      src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/qzra2tuw_logo%20entourer.png" 
+                      alt="CREATIVINDUSTRY" 
+                      className="w-32 h-auto object-contain"
+                    />
                   </div>
-                  <div className="text-right bg-amber-50 p-3 rounded">
-                    <h3 className="text-amber-700 font-bold">DEVIS</h3>
-                    <p className="text-xs mt-1"><strong>Date:</strong> {formatDate(new Date().toISOString().split('T')[0])}</p>
-                    <p className="text-xs"><strong>Validité:</strong> {formatDate(formData.expiration_date)}</p>
+                  {/* Company Info Box */}
+                  <div className="w-1/2 border border-slate-300 p-3 text-xs">
+                    <p className="text-slate-500 text-[10px] mb-1">Émetteur ou Émettrice</p>
+                    <p className="font-bold text-slate-800">{company?.name || 'CREATIVINDUSTRY'}</p>
+                    <p>{company?.address}</p>
+                    <p>{company?.email}</p>
+                    <p>{company?.phone}</p>
                   </div>
                 </div>
 
-                {/* Client */}
-                {selectedClient && (
-                  <div className="mb-4">
-                    <h4 className="text-amber-700 font-semibold text-xs mb-2">CLIENT</h4>
-                    <div className="bg-amber-50 p-3 rounded text-xs">
-                      <p className="font-semibold">{selectedClient.name}</p>
+                {/* Devis Info + Client Info */}
+                <div className="flex justify-between mb-4">
+                  {/* Devis Info */}
+                  <div className="w-1/2">
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Devis</h3>
+                    <div className="text-xs space-y-1">
+                      <div className="flex"><span className="font-semibold w-32">Numéro</span><span>D-2026-XXX</span></div>
+                      <div className="flex"><span className="font-semibold w-32">Date d'émission</span><span>{formatDate(new Date().toISOString().split('T')[0])}</span></div>
+                      <div className="flex"><span className="font-semibold w-32">Date d'expiration</span><span>{formatDate(formData.expiration_date)}</span></div>
+                      <div className="flex"><span className="font-semibold w-32">Type de vente</span><span>Prestations de services</span></div>
+                      {formData.event_date && (
+                        <div className="flex"><span className="font-semibold w-32">Date événement</span><span>{formatDate(formData.event_date)}</span></div>
+                      )}
+                    </div>
+                  </div>
+                  {/* Client Info Box */}
+                  {selectedClient && (
+                    <div className="w-1/2 border border-slate-300 p-3 text-xs">
+                      <p className="text-slate-500 text-[10px] mb-1">Client ou Cliente</p>
+                      <p className="font-bold text-slate-800">{selectedClient.name}</p>
                       <p>{selectedClient.address}</p>
                       <p>{selectedClient.email}</p>
+                      <p>{selectedClient.phone}</p>
                     </div>
-                    {formData.event_date && (
-                      <p className="mt-2 text-xs font-semibold text-amber-700">
-                        Date de l'événement: {formatDate(formData.event_date)}
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Items Table */}
                 {formData.items.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="text-amber-700 font-semibold text-xs mb-2">PRESTATIONS</h4>
-                    <table className="w-full text-xs">
+                    <table className="w-full text-xs border border-slate-300">
                       <thead>
-                        <tr className="bg-amber-600 text-white">
-                          <th className="p-2 text-left">Désignation</th>
-                          <th className="p-2 text-right">Qté</th>
-                          <th className="p-2 text-right">Prix HT</th>
+                        <tr className="bg-slate-700 text-white">
+                          <th className="p-2 text-left border-r border-slate-600">Produits</th>
+                          <th className="p-2 text-center border-r border-slate-600">Qté</th>
+                          <th className="p-2 text-right border-r border-slate-600">Prix u. HT</th>
+                          <th className="p-2 text-center border-r border-slate-600">TVA (%)</th>
                           <th className="p-2 text-right">Total HT</th>
                         </tr>
                       </thead>
                       <tbody>
                         {formData.items.map((item, idx) => (
-                          <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50/50'}>
-                            <td className="p-2">{item.service_name || '-'}</td>
-                            <td className="p-2 text-right">{item.quantity} {item.unit}</td>
-                            <td className="p-2 text-right font-mono">{formatCurrency(item.price_ht)}</td>
+                          <tr key={idx} className="border-b border-slate-200">
+                            <td className="p-2 font-semibold border-r border-slate-200">{item.service_name || '-'}</td>
+                            <td className="p-2 text-center border-r border-slate-200">{item.quantity} {item.unit}</td>
+                            <td className="p-2 text-right border-r border-slate-200 font-mono">{formatCurrency(item.price_ht)}</td>
+                            <td className="p-2 text-center border-r border-slate-200">{item.tva_rate > 0 ? `${item.tva_rate}%` : 'Aucune'}</td>
                             <td className="p-2 text-right font-mono">{formatCurrency(item.quantity * item.price_ht)}</td>
                           </tr>
                         ))}
@@ -453,38 +460,78 @@ const QuoteEditor = () => {
                   </div>
                 )}
 
-                {/* Totals */}
-                <div className="flex justify-end">
-                  <div className="w-48 text-xs">
-                    <div className="flex justify-between py-1 border-b border-amber-100">
-                      <span>Total HT avant remise</span>
-                      <span className="font-mono">{formatCurrency(totals.totalHtBeforeDiscount)}</span>
-                    </div>
-                    <div className="flex justify-between py-1 border-b border-amber-100">
-                      <span>Remise</span>
-                      <span className="font-mono">{formatCurrency(formData.discount)}</span>
-                    </div>
-                    <div className="flex justify-between py-1 border-b border-amber-100">
-                      <span>Total HT</span>
-                      <span className="font-mono">{formatCurrency(totals.totalHt)}</span>
-                    </div>
-                    <div className="flex justify-between py-1 border-b border-amber-100">
-                      <span>Total TVA</span>
-                      <span className="font-mono">{formatCurrency(totals.totalTva)}</span>
-                    </div>
-                    <div className="flex justify-between py-2 font-bold text-white bg-amber-600 px-2 rounded">
-                      <span>TOTAL TTC</span>
-                      <span className="font-mono">{formatCurrency(totals.totalTtc)}</span>
-                    </div>
+                {/* TVA Details + Récapitulatif */}
+                <div className="flex justify-between mb-4 text-xs">
+                  {/* TVA Details */}
+                  <div className="w-1/2 pr-2">
+                    <h4 className="font-bold text-slate-700 mb-2">Détails TVA</h4>
+                    <table className="w-full border border-slate-300">
+                      <thead>
+                        <tr className="bg-slate-100">
+                          <th className="p-1 text-left border-r border-slate-200">Taux</th>
+                          <th className="p-1 text-right border-r border-slate-200">Montant TVA</th>
+                          <th className="p-1 text-right">Base HT</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="p-1 border-r border-slate-200">Aucune</td>
+                          <td className="p-1 text-right border-r border-slate-200 font-mono">{formatCurrency(totals.totalTva)}</td>
+                          <td className="p-1 text-right font-mono">{formatCurrency(totals.totalHt)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Récapitulatif */}
+                  <div className="w-1/2 pl-2">
+                    <h4 className="font-bold text-slate-700 mb-2">Récapitulatif</h4>
+                    <table className="w-full border border-slate-300">
+                      <tbody>
+                        <tr className="border-b border-slate-200">
+                          <td className="p-1">Total HT avant remise</td>
+                          <td className="p-1 text-right font-mono">{formatCurrency(totals.totalHtBeforeDiscount)}</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="p-1">Remise</td>
+                          <td className="p-1 text-right font-mono">{formatCurrency(formData.discount)}</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="p-1">Total HT</td>
+                          <td className="p-1 text-right font-mono">{formatCurrency(totals.totalHt)}</td>
+                        </tr>
+                        <tr className="border-b border-slate-200">
+                          <td className="p-1">Total TVA</td>
+                          <td className="p-1 text-right font-mono">{formatCurrency(totals.totalTva)}</td>
+                        </tr>
+                        <tr className="bg-slate-700 text-white font-bold">
+                          <td className="p-1">Total TTC</td>
+                          <td className="p-1 text-right font-mono">{formatCurrency(totals.totalTtc)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
-                {/* Bank Info */}
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded text-xs">
-                  <p className="font-semibold text-amber-700 mb-1">COORDONNÉES BANCAIRES</p>
-                  <p><strong>Établissement:</strong> {company?.bank_name || 'QONTO'}</p>
-                  <p><strong>IBAN:</strong> {company?.iban}</p>
-                  <p><strong>BIC:</strong> {company?.bic}</p>
+                {/* Paiement Box */}
+                <div className="border border-slate-300 p-3 mb-3 text-xs">
+                  <h4 className="font-bold text-slate-700 mb-2">Paiement</h4>
+                  <div className="grid grid-cols-2 gap-1">
+                    <span className="font-semibold">Établissement</span><span>{company?.bank_name || 'QONTO'}</span>
+                    <span className="font-semibold">IBAN</span><span className="font-mono text-[10px]">{company?.iban}</span>
+                    <span className="font-semibold">BIC</span><span className="font-mono">{company?.bic}</span>
+                  </div>
+                </div>
+
+                {/* Conditions */}
+                <div className="text-[9px] text-slate-500 mb-2">
+                  Pénalités de retard : trois fois le taux annuel d'intérêt légal en vigueur calculé depuis la date d'échéance jusqu'à complet paiement du prix.<br/>
+                  Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement : 40 €
+                </div>
+
+                {/* Signature */}
+                <div className="text-xs text-slate-600">
+                  Date et signature précédées de la mention<br/>
+                  « Bon pour accord »
                 </div>
               </div>
             </CardContent>
