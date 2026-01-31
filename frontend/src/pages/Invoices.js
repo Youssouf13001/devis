@@ -113,6 +113,22 @@ const Invoices = () => {
     }
   };
 
+  const handleDownloadPdf = async (invoice) => {
+    try {
+      const response = await getInvoicePdf(invoice.id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Facture-${invoice.client_name}-${invoice.invoice_number}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success("Facture téléchargée");
+    } catch (error) {
+      toast.error("Erreur lors du téléchargement");
+    }
+  };
+
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value || 0);
   };
