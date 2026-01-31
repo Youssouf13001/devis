@@ -552,13 +552,13 @@ def generate_quote_pdf(quote: dict, company: dict) -> bytes:
         except:
             return date_str
     
-    # Try to load logo
-    logo_url = "https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/qzra2tuw_logo%20entourer.png"
+    # Try to load logo - Clean CREATIVINDUSTRY France logo
+    logo_url = "https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/ml5zhjie_Nvo%20logo%20Creativindustry%20France.png"
     logo_img = None
     try:
         logo_data = urllib.request.urlopen(logo_url, timeout=5).read()
         logo_buffer = BytesIO(logo_data)
-        logo_img = Image(logo_buffer, width=45*mm, height=35*mm)
+        logo_img = Image(logo_buffer, width=55*mm, height=20*mm)
     except:
         pass
     
