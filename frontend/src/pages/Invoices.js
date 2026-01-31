@@ -209,6 +209,9 @@ const Invoices = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuItem onClick={() => handleDownloadPdf(invoice)}>
+                            <Download size={16} className="mr-2 text-blue-600" /> Télécharger PDF
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openPaymentDialog(invoice)}>
                             <CreditCard size={16} className="mr-2 text-emerald-600" /> Ajouter un acompte
                           </DropdownMenuItem>
