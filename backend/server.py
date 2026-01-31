@@ -202,8 +202,17 @@ class InvoiceResponse(BaseModel):
     total_ht: float
     total_tva: float
     total_ttc: float
+    acompte: float = 0.0
+    reste_a_payer: float = 0.0
     status: str
     created_at: str
+    payments: List[dict] = []
+
+class PaymentCreate(BaseModel):
+    amount: float
+    payment_date: str
+    payment_method: str = "virement"
+    notes: Optional[str] = None
 
 class DashboardStats(BaseModel):
     total_quotes: int
