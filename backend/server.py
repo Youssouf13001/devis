@@ -1003,50 +1003,52 @@ async def get_quote_pdf(quote_id: str, user: dict = Depends(get_current_user)):
         headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
 
-# ============ EMAIL SENDING ============
+# ============ EMAIL SENDING (IONOS SMTP) ============
 
 async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes):
-    """Send quote via email with PDF attachment"""
-    if not SENDGRID_API_KEY or not SENDER_EMAIL:
-        logger.error("SendGrid not configured")
+    """Send quote via email with PDF attachment using IONOS SMTP"""
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+        logger.error("SMTP not configured")
         return False
     
     try:
-        message = Mail(
-            from_email=SENDER_EMAIL,
-            to_emails=quote['client_email'],
-            subject=f"Devis {quote['quote_number']} - {company.get('name', 'CREATIVINDUSTRY')}",
-            html_content=f"""
-            <html>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                <h2 style="color: #0066cc;">Bonjour {quote['client_name']},</h2>
-                <p>Veuillez trouver ci-joint notre devis <strong>{quote['quote_number']}</strong> d'un montant de <strong>{quote['total_ttc']:,.2f} € TTC</strong>.</p>
-                <p>Ce devis est valable jusqu'au <strong>{quote['expiration_date']}</strong>.</p>
-                <p>N'hésitez pas à nous contacter pour toute question.</p>
-                <br>
-                <p>Cordialement,</p>
-                <p><strong>{company.get('name', 'CREATIVINDUSTRY')}</strong><br>
-                {company.get('phone', '')}<br>
-                {company.get('email', '')}</p>
-            </body>
-            </html>
-            """
-        )
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_EMAIL
+        msg['To'] = quote['client_email']
+        msg['Subject'] = f"Devis {quote['quote_number']} - {company.get('name', 'CREATIVINDUSTRY')}"
+        
+        # HTML body
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #d97706;">Bonjour {quote['client_name']},</h2>
+            <p>Veuillez trouver ci-joint notre devis <strong>{quote['quote_number']}</strong> d'un montant de <strong>{quote['total_ttc']:,.2f} € TTC</strong>.</p>
+            <p>Ce devis est valable jusqu'au <strong>{quote['expiration_date']}</strong>.</p>
+            <p>N'hésitez pas à nous contacter pour toute question.</p>
+            <br>
+            <p>Cordialement,</p>
+            <p><strong>{company.get('name', 'CREATIVINDUSTRY')}</strong><br>
+            {company.get('phone', '')}<br>
+            {company.get('email', '')}</p>
+        </body>
+        </html>
+        """
+        msg.attach(MIMEText(html_body, 'html'))
         
         # Attach PDF
-        encoded_pdf = base64.b64encode(pdf_bytes).decode()
-        attachment = Attachment(
-            FileContent(encoded_pdf),
-            FileName(f"Devis-{quote['quote_number']}.pdf"),
-            FileType("application/pdf"),
-            Disposition("attachment")
-        )
-        message.attachment = attachment
+        pdf_attachment = MIMEApplication(pdf_bytes, _subtype='pdf')
+        pdf_attachment.add_header('Content-Disposition', 'attachment', filename=f"Devis-{quote['quote_number']}.pdf")
+        msg.attach(pdf_attachment)
         
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
+        # Send via SMTP SSL
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, quote['client_email'], msg.as_string())
         
-        return response.status_code == 202
+        logger.info(f"Email sent successfully to {quote['client_email']}")
+        return True
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
         return False
