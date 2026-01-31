@@ -63,7 +63,7 @@ code {
         @apply border-border;
     }
     body {
-        @apply bg-slate-50 text-slate-900;
+        @apply bg-amber-50/30 text-stone-900;
     }
 }
 
