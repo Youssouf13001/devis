@@ -906,7 +906,7 @@ async def get_invoice(invoice_id: str, user: dict = Depends(get_current_user)):
 
 @api_router.put("/invoices/{invoice_id}/status")
 async def update_invoice_status(invoice_id: str, status: str, user: dict = Depends(get_current_user)):
-    valid_statuses = ["en attente", "payée", "annulée"]
+    valid_statuses = ["en attente", "payée", "annulée", "partiellement payée"]
     if status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Statut invalide. Valeurs acceptées: {valid_statuses}")
     
@@ -917,6 +917,86 @@ async def update_invoice_status(invoice_id: str, status: str, user: dict = Depen
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Facture non trouvée")
     return {"message": "Statut mis à jour"}
+
+@api_router.post("/invoices/{invoice_id}/payment")
+async def add_payment_to_invoice(invoice_id: str, payment: PaymentCreate, user: dict = Depends(get_current_user)):
+    """Ajouter un acompte/paiement à une facture"""
+    invoice = await db.invoices.find_one({"id": invoice_id, "user_id": user['id']}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    # Create payment record
+    payment_record = {
+        "id": str(uuid.uuid4()),
+        "amount": payment.amount,
+        "payment_date": payment.payment_date,
+        "payment_method": payment.payment_method,
+        "notes": payment.notes,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Get existing payments
+    payments = invoice.get('payments', [])
+    payments.append(payment_record)
+    
+    # Calculate new totals
+    total_paid = sum(p['amount'] for p in payments)
+    reste_a_payer = invoice['total_ttc'] - total_paid
+    
+    # Determine status
+    if reste_a_payer <= 0:
+        new_status = "payée"
+        reste_a_payer = 0
+    elif total_paid > 0:
+        new_status = "partiellement payée"
+    else:
+        new_status = invoice.get('status', 'en attente')
+    
+    # Update invoice
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {
+            "payments": payments,
+            "acompte": total_paid,
+            "reste_a_payer": reste_a_payer,
+            "status": new_status
+        }}
+    )
+    
+    updated = await db.invoices.find_one({"id": invoice_id}, {"_id": 0})
+    return InvoiceResponse(**updated)
+
+@api_router.delete("/invoices/{invoice_id}/payment/{payment_id}")
+async def delete_payment(invoice_id: str, payment_id: str, user: dict = Depends(get_current_user)):
+    """Supprimer un paiement d'une facture"""
+    invoice = await db.invoices.find_one({"id": invoice_id, "user_id": user['id']}, {"_id": 0})
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Facture non trouvée")
+    
+    payments = [p for p in invoice.get('payments', []) if p['id'] != payment_id]
+    
+    total_paid = sum(p['amount'] for p in payments)
+    reste_a_payer = invoice['total_ttc'] - total_paid
+    
+    if reste_a_payer <= 0:
+        new_status = "payée"
+        reste_a_payer = 0
+    elif total_paid > 0:
+        new_status = "partiellement payée"
+    else:
+        new_status = "en attente"
+    
+    await db.invoices.update_one(
+        {"id": invoice_id},
+        {"$set": {
+            "payments": payments,
+            "acompte": total_paid,
+            "reste_a_payer": reste_a_payer,
+            "status": new_status
+        }}
+    )
+    
+    return {"message": "Paiement supprimé"}
 
 # ============ DASHBOARD STATS ============
 
