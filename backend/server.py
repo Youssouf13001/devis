@@ -39,9 +39,11 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'devispro-secret-key-change-in-product
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
-# SendGrid Config
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
-SENDER_EMAIL = os.environ.get('SENDER_EMAIL', '')
+# SMTP Config (IONOS)
+SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.ionos.fr')
+SMTP_PORT = int(os.environ.get('SMTP_PORT', 465))
+SMTP_EMAIL = os.environ.get('SMTP_EMAIL', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 
 # Create the main app
 app = FastAPI(title="DevisPro API")
