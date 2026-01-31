@@ -392,7 +392,8 @@ const QuoteEditor = () => {
                     <img 
                       src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/ml5zhjie_Nvo%20logo%20Creativindustry%20France.png" 
                       alt="CREATIVINDUSTRY France" 
-                      className="h-16 object-contain"
+                      style={{ width: '50mm', height: '31mm' }}
+                      className="object-contain"
                     />
                   </div>
                   {/* Company Info Box */}
