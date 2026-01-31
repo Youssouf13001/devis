@@ -13,9 +13,11 @@ import uuid
 from datetime import datetime, timezone, timedelta
 import jwt
 import bcrypt
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
-import base64
+import smtplib
+import ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 from io import BytesIO
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
