@@ -515,18 +515,27 @@ async def delete_quote(quote_id: str, user: dict = Depends(get_current_user)):
 # ============ PDF GENERATION ============
 
 def generate_quote_pdf(quote: dict, company: dict) -> bytes:
-    """Generate PDF from quote data using reportlab"""
+    """Generate PDF from quote data using reportlab with orange/beige theme"""
+    import urllib.request
+    from reportlab.platypus import Image
     
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20*mm, leftMargin=20*mm, topMargin=15*mm, bottomMargin=15*mm)
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=15*mm, leftMargin=15*mm, topMargin=15*mm, bottomMargin=15*mm)
+    
+    # Colors - Orange/Beige theme
+    ORANGE = colors.HexColor('#D4790E')
+    BEIGE = colors.HexColor('#F5E6D3')
+    DARK = colors.HexColor('#2C2C2C')
+    LIGHT_BEIGE = colors.HexColor('#FDF8F3')
     
     # Styles
     styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor('#0066cc'), spaceAfter=10)
-    header_style = ParagraphStyle('Header', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#333333'))
-    section_title = ParagraphStyle('Section', parent=styles['Heading2'], fontSize=11, textColor=colors.HexColor('#0066cc'), spaceBefore=15, spaceAfter=5)
-    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=9)
+    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=16, textColor=ORANGE, spaceAfter=8, fontName='Helvetica-Bold')
+    header_style = ParagraphStyle('Header', parent=styles['Normal'], fontSize=10, textColor=DARK)
+    section_title = ParagraphStyle('Section', parent=styles['Heading2'], fontSize=11, textColor=ORANGE, spaceBefore=12, spaceAfter=5, fontName='Helvetica-Bold')
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=9, textColor=DARK)
     small_style = ParagraphStyle('Small', parent=styles['Normal'], fontSize=8, textColor=colors.HexColor('#666666'))
+    bold_style = ParagraphStyle('Bold', parent=styles['Normal'], fontSize=9, textColor=DARK, fontName='Helvetica-Bold')
     
     elements = []
     
@@ -535,6 +544,8 @@ def generate_quote_pdf(quote: dict, company: dict) -> bytes:
         return f"{val:,.2f} €".replace(",", " ").replace(".", ",").replace(" ", " ")
     
     def fmt_date(date_str):
+        if not date_str:
+            return ""
         try:
             d = datetime.strptime(date_str, "%Y-%m-%d")
             months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
@@ -542,7 +553,17 @@ def generate_quote_pdf(quote: dict, company: dict) -> bytes:
         except:
             return date_str
     
-    # Header with company info
+    # Try to load logo
+    logo_url = "https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/qzra2tuw_logo%20entourer.png"
+    logo_img = None
+    try:
+        logo_data = urllib.request.urlopen(logo_url, timeout=5).read()
+        logo_buffer = BytesIO(logo_data)
+        logo_img = Image(logo_buffer, width=50*mm, height=50*mm)
+    except:
+        pass
+    
+    # Header with logo
     company_name = company.get('name', 'CREATIVINDUSTRY')
     company_info = f"""{company.get('address', '')}<br/>
 Email: {company.get('email', '')}<br/>
@@ -550,41 +571,52 @@ Tél: {company.get('phone', '')}<br/>
 {company.get('status', '')} - SIREN: {company.get('siren', '')}<br/>
 N° TVA: {company.get('tva_number', '')}"""
     
-    quote_info = f"""<b>DEVIS</b><br/>
-N°: {quote['quote_number']}<br/>
-Date: {fmt_date(quote['emission_date'])}<br/>
-Validité: {fmt_date(quote['expiration_date'])}<br/>
+    quote_info = f"""<b>DEVIS N° {quote['quote_number']}</b><br/><br/>
+Date d'émission: {fmt_date(quote['emission_date'])}<br/>
+Date de validité: {fmt_date(quote['expiration_date'])}<br/>
 Type: Prestations de services"""
     
-    header_data = [
-        [Paragraph(f"<b>{company_name}</b>", title_style), Paragraph(quote_info, header_style)],
-        [Paragraph(company_info, small_style), '']
-    ]
-    header_table = Table(header_data, colWidths=[120*mm, 50*mm])
+    if logo_img:
+        header_data = [
+            [logo_img, Paragraph(f"<b>{company_name}</b><br/><br/>{company_info}", normal_style), Paragraph(quote_info, header_style)]
+        ]
+        header_table = Table(header_data, colWidths=[55*mm, 70*mm, 55*mm])
+    else:
+        header_data = [
+            [Paragraph(f"<b>{company_name}</b><br/><br/>{company_info}", normal_style), Paragraph(quote_info, header_style)]
+        ]
+        header_table = Table(header_data, colWidths=[100*mm, 80*mm])
+    
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('LINEBELOW', (0, 1), (-1, 1), 2, colors.HexColor('#0066cc')),
-        ('BOTTOMPADDING', (0, 1), (-1, 1), 10),
+        ('LINEBELOW', (0, 0), (-1, 0), 3, ORANGE),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 10*mm))
+    elements.append(Spacer(1, 8*mm))
     
     # Client section
-    elements.append(Paragraph("Client ou Cliente", section_title))
+    elements.append(Paragraph("CLIENT", section_title))
     client_info = f"""<b>{quote['client_name']}</b><br/>
 {quote['client_address']}<br/>
 Email: {quote['client_email']}<br/>
 Tél: {quote['client_phone']}"""
     elements.append(Paragraph(client_info, normal_style))
+    
+    # Event date (wedding date)
+    if quote.get('event_date'):
+        elements.append(Spacer(1, 4*mm))
+        elements.append(Paragraph(f"<b>Date de l'événement: {fmt_date(quote['event_date'])}</b>", bold_style))
+    
     elements.append(Spacer(1, 8*mm))
     
     # Items table
-    elements.append(Paragraph("Détail des prestations", section_title))
+    elements.append(Paragraph("DÉTAIL DES PRESTATIONS", section_title))
     
-    items_data = [['Produits', 'Qté', 'Prix unitaire HT', 'TVA (%)', 'Total HT']]
+    items_data = [['Désignation', 'Quantité', 'Prix unitaire HT', 'TVA', 'Total HT']]
     for item in quote['items']:
         total_ht = item['quantity'] * item['price_ht']
-        tva_text = f"{item['tva_rate']}%" if item['tva_rate'] > 0 else "Aucune"
+        tva_text = f"{item['tva_rate']}%" if item['tva_rate'] > 0 else "Exonéré"
         items_data.append([
             item['service_name'],
             f"{item['quantity']} {item['unit']}",
@@ -593,92 +625,101 @@ Tél: {quote['client_phone']}"""
             fmt_price(total_ht)
         ])
     
-    items_table = Table(items_data, colWidths=[60*mm, 25*mm, 35*mm, 20*mm, 30*mm])
+    items_table = Table(items_data, colWidths=[60*mm, 25*mm, 35*mm, 25*mm, 35*mm])
     items_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0066cc')),
+        ('BACKGROUND', (0, 0), (-1, 0), ORANGE),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('FONTSIZE', (0, 0), (-1, 0), 9),
-        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, LIGHT_BEIGE]),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
     ]))
     elements.append(items_table)
-    elements.append(Spacer(1, 8*mm))
+    elements.append(Spacer(1, 6*mm))
     
-    # TVA details
-    elements.append(Paragraph("Détails TVA", section_title))
-    tva_details = {}
-    for item in quote['items']:
-        rate = item['tva_rate']
-        base = item['quantity'] * item['price_ht']
-        tva_amount = base * (rate / 100)
-        if rate not in tva_details:
-            tva_details[rate] = {"base": 0, "amount": 0}
-        tva_details[rate]["base"] += base
-        tva_details[rate]["amount"] += tva_amount
-    
-    tva_data = [['Taux', 'Montant TVA', 'Base HT']]
-    for rate, vals in tva_details.items():
-        tva_text = f"{rate}%" if rate > 0 else "Aucune"
-        tva_data.append([tva_text, fmt_price(vals['amount']), fmt_price(vals['base'])])
-    
-    tva_table = Table(tva_data, colWidths=[40*mm, 40*mm, 40*mm])
-    tva_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0066cc')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    elements.append(tva_table)
-    elements.append(Spacer(1, 8*mm))
-    
-    # Totals
+    # Totals on the right
     totals_data = [
-        ['Total HT avant remise', fmt_price(quote['total_ht_before_discount'])],
-        ['Remise', fmt_price(quote['discount'])],
-        ['Total HT', fmt_price(quote['total_ht'])],
-        ['Total TVA', fmt_price(quote['total_tva'])],
-        ['Total TTC', fmt_price(quote['total_ttc'])],
+        ['Total HT avant remise:', fmt_price(quote['total_ht_before_discount'])],
+        ['Remise:', fmt_price(quote['discount'])],
+        ['Total HT:', fmt_price(quote['total_ht'])],
+        ['Total TVA:', fmt_price(quote['total_tva'])],
+        ['TOTAL TTC:', fmt_price(quote['total_ttc'])],
     ]
     
-    totals_table = Table(totals_data, colWidths=[120*mm, 50*mm])
+    totals_table = Table(totals_data, colWidths=[100*mm, 80*mm])
     totals_table.setStyle(TableStyle([
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
         ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
-        ('LINEBELOW', (0, 0), (-1, 3), 0.5, colors.HexColor('#eeeeee')),
-        ('LINEABOVE', (0, 4), (-1, 4), 2, colors.HexColor('#0066cc')),
-        ('FONTSIZE', (0, 4), (-1, 4), 11),
-        ('TEXTCOLOR', (0, 4), (-1, 4), colors.HexColor('#0066cc')),
+        ('LINEBELOW', (0, 0), (-1, 3), 0.5, colors.HexColor('#dddddd')),
+        ('BACKGROUND', (0, 4), (-1, 4), ORANGE),
+        ('TEXTCOLOR', (0, 4), (-1, 4), colors.white),
+        ('FONTNAME', (0, 4), (-1, 4), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 4), (-1, 4), 12),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     elements.append(totals_table)
     elements.append(Spacer(1, 10*mm))
     
-    # Payment info
-    elements.append(Paragraph("Informations de paiement", section_title))
-    payment_info = f"""Établissement: {company.get('bank_name', 'QONTO')}<br/>
-IBAN: {company.get('iban', '')}<br/>
-BIC: {company.get('bic', '')}"""
-    elements.append(Paragraph(payment_info, normal_style))
+    # Modalités de règlement (Payment terms)
+    elements.append(Paragraph("MODALITÉS DE RÈGLEMENT", section_title))
+    
+    payment_terms = """
+    <b>Acompte à la signature:</b> 30% du montant total<br/>
+    <b>Solde:</b> Le jour de l'événement ou 7 jours avant<br/><br/>
+    <b>Modes de paiement acceptés:</b><br/>
+    • Virement bancaire<br/>
+    • Espèces<br/>
+    • Chèque
+    """
+    elements.append(Paragraph(payment_terms, normal_style))
+    elements.append(Spacer(1, 6*mm))
+    
+    # Bank info box
+    elements.append(Paragraph("COORDONNÉES BANCAIRES", section_title))
+    bank_info = f"""
+    <b>Établissement:</b> {company.get('bank_name', 'QONTO')}<br/>
+    <b>IBAN:</b> {company.get('iban', '')}<br/>
+    <b>BIC:</b> {company.get('bic', '')}
+    """
+    
+    bank_data = [[Paragraph(bank_info, normal_style)]]
+    bank_table = Table(bank_data, colWidths=[180*mm])
+    bank_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), BEIGE),
+        ('BOX', (0, 0), (-1, -1), 1, ORANGE),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('LEFTPADDING', (0, 0), (-1, -1), 15),
+    ]))
+    elements.append(bank_table)
     elements.append(Spacer(1, 8*mm))
     
     # Conditions
-    elements.append(Paragraph("Conditions", section_title))
-    conditions = """Pénalités de retard: trois fois le taux annuel d'intérêt légal en vigueur calculé depuis la date d'échéance jusqu'à complet paiement du prix.<br/>
-Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement: 40 €"""
+    conditions = """<b>Conditions:</b> Pénalités de retard: trois fois le taux annuel d'intérêt légal. Indemnité forfaitaire pour frais de recouvrement: 40 €<br/>
+    Ce devis est valable jusqu'à la date de validité indiquée. Au-delà, une nouvelle proposition sera établie."""
     elements.append(Paragraph(conditions, small_style))
-    elements.append(Spacer(1, 10*mm))
+    elements.append(Spacer(1, 8*mm))
     
     # Signature
-    elements.append(Paragraph('Date et signature précédées de la mention "Bon pour accord"', small_style))
-    elements.append(Spacer(1, 20*mm))
+    signature_text = """<b>Bon pour accord</b><br/><br/>
+    Date: ____________________<br/><br/>
+    Signature du client:"""
+    
+    sig_data = [[Paragraph(signature_text, normal_style)]]
+    sig_table = Table(sig_data, colWidths=[90*mm])
+    sig_table.setStyle(TableStyle([
+        ('BOX', (0, 0), (-1, -1), 1, ORANGE),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 40),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(sig_table)
     
     doc.build(elements)
     return buffer.getvalue()
