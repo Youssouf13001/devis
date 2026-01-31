@@ -172,6 +172,7 @@ class QuoteResponse(BaseModel):
     client_phone: str
     emission_date: str
     expiration_date: str
+    event_date: Optional[str] = None
     items: List[QuoteLineItem]
     total_ht_before_discount: float
     discount: float
