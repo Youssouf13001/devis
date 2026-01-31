@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getInvoices, updateInvoiceStatus, addPaymentToInvoice, deletePayment } from "../lib/api";
+import { getInvoices, updateInvoiceStatus, addPaymentToInvoice, deletePayment, getInvoicePdf } from "../lib/api";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -29,7 +29,7 @@ import {
 } from "../components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Badge } from "../components/ui/badge";
-import { MoreVertical, Receipt, CheckCircle, XCircle, Clock, Plus, Trash2, CreditCard } from "lucide-react";
+import { MoreVertical, Receipt, CheckCircle, XCircle, Clock, Plus, Trash2, CreditCard, Download, Eye } from "lucide-react";
 
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
