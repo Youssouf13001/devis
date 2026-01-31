@@ -191,7 +191,7 @@ const QuoteEditor = () => {
             {/* Client Selection */}
             <Card>
               <CardHeader>
-                <CardTitle style={{ fontFamily: 'Manrope' }}>Client</CardTitle>
+                <CardTitle style={{ fontFamily: 'Manrope' }} className="text-amber-700">Client</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -209,14 +209,25 @@ const QuoteEditor = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Date d'expiration</Label>
-                  <Input
-                    type="date"
-                    value={formData.expiration_date}
-                    onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                    data-testid="expiration-date"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Date d'expiration du devis</Label>
+                    <Input
+                      type="date"
+                      value={formData.expiration_date}
+                      onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
+                      data-testid="expiration-date"
+                    />
+                  </div>
+                  <div>
+                    <Label>Date de l'événement (mariage)</Label>
+                    <Input
+                      type="date"
+                      value={formData.event_date}
+                      onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+                      data-testid="event-date"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
