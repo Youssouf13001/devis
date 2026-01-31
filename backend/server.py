@@ -1005,11 +1005,11 @@ async def get_quote_pdf(quote_id: str, user: dict = Depends(get_current_user)):
 
 # ============ EMAIL SENDING (IONOS SMTP) ============
 
-async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes):
+async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes) -> dict:
     """Send quote via email with PDF attachment using IONOS SMTP"""
     if not SMTP_EMAIL or not SMTP_PASSWORD:
         logger.error("SMTP not configured")
-        return False
+        return {"success": False, "error": "Configuration SMTP manquante"}
     
     try:
         # Create message
@@ -1043,15 +1043,25 @@ async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes):
         
         # Send via SMTP SSL
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context) as server:
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context, timeout=30) as server:
             server.login(SMTP_EMAIL, SMTP_PASSWORD)
             server.sendmail(SMTP_EMAIL, quote['client_email'], msg.as_string())
         
         logger.info(f"Email sent successfully to {quote['client_email']}")
-        return True
+        return {"success": True}
+    except smtplib.SMTPRecipientsRefused as e:
+        error_msg = f"L'adresse email '{quote['client_email']}' est invalide ou n'existe pas"
+        logger.error(f"Recipients refused: {e}")
+        return {"success": False, "error": error_msg}
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Auth error: {e}")
+        return {"success": False, "error": "Erreur d'authentification SMTP"}
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP error: {e}")
+        return {"success": False, "error": f"Erreur SMTP: {str(e)}"}
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
-        return False
+        return {"success": False, "error": str(e)}
 
 @api_router.post("/quotes/{quote_id}/send")
 async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dict = Depends(get_current_user)):
@@ -1067,9 +1077,9 @@ async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dic
     pdf_bytes = generate_quote_pdf(quote, company)
     
     # Send email
-    success = await send_quote_email(quote, company, pdf_bytes)
+    result = await send_quote_email(quote, company, pdf_bytes)
     
-    if success:
+    if result["success"]:
         await db.quotes.update_one(
             {"id": quote_id},
             {"$set": {"status": "envoyé", "sent_at": datetime.now(timezone.utc).isoformat()}}
