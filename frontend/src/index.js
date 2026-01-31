@@ -15,23 +15,45 @@ window.ResizeObserver = class ResizeObserver extends resizeObserverErr {
   }
 };
 
-// Suppress error overlay for benign errors
+// Suppress error overlay for benign errors (caused by Emergent badge injection)
+const errorMessages = ['ResizeObserver', 'removeChild', 'NotFoundError', 'not a child'];
+
 window.addEventListener('error', (e) => {
-  if (e.message?.includes('ResizeObserver') || 
-      e.message?.includes('removeChild') ||
-      e.message?.includes('NotFoundError')) {
+  if (errorMessages.some(msg => e.message?.includes(msg))) {
     e.stopImmediatePropagation();
     e.preventDefault();
     return false;
   }
-});
+}, true);
 
 window.addEventListener('unhandledrejection', (e) => {
-  if (e.reason?.message?.includes('ResizeObserver')) {
+  if (errorMessages.some(msg => e.reason?.message?.includes(msg))) {
     e.preventDefault();
     return false;
   }
-});
+}, true);
+
+// Patch console.error to suppress these messages
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  const message = args.join(' ');
+  if (errorMessages.some(msg => message.includes(msg))) {
+    return;
+  }
+  originalConsoleError.apply(console, args);
+};
+
+// Override the error overlay handler if it exists
+if (typeof window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__ !== 'undefined') {
+  window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__ = {
+    ...window.__REACT_ERROR_OVERLAY_GLOBAL_HOOK__,
+    handleRuntimeError: (error) => {
+      if (errorMessages.some(msg => error.message?.includes(msg))) {
+        return;
+      }
+    }
+  };
+}
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
