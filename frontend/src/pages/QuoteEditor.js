@@ -456,27 +456,35 @@ const QuoteEditor = () => {
                 {/* Totals */}
                 <div className="flex justify-end">
                   <div className="w-48 text-xs">
-                    <div className="flex justify-between py-1 border-b border-slate-100">
+                    <div className="flex justify-between py-1 border-b border-amber-100">
                       <span>Total HT avant remise</span>
                       <span className="font-mono">{formatCurrency(totals.totalHtBeforeDiscount)}</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-100">
+                    <div className="flex justify-between py-1 border-b border-amber-100">
                       <span>Remise</span>
                       <span className="font-mono">{formatCurrency(formData.discount)}</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-100">
+                    <div className="flex justify-between py-1 border-b border-amber-100">
                       <span>Total HT</span>
                       <span className="font-mono">{formatCurrency(totals.totalHt)}</span>
                     </div>
-                    <div className="flex justify-between py-1 border-b border-slate-100">
+                    <div className="flex justify-between py-1 border-b border-amber-100">
                       <span>Total TVA</span>
                       <span className="font-mono">{formatCurrency(totals.totalTva)}</span>
                     </div>
-                    <div className="flex justify-between py-2 font-bold text-blue-600">
-                      <span>Total TTC</span>
+                    <div className="flex justify-between py-2 font-bold text-white bg-amber-600 px-2 rounded">
+                      <span>TOTAL TTC</span>
                       <span className="font-mono">{formatCurrency(totals.totalTtc)}</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Bank Info */}
+                <div className="mt-4 p-3 bg-amber-50 border border-amber-300 rounded text-xs">
+                  <p className="font-semibold text-amber-700 mb-1">COORDONNÉES BANCAIRES</p>
+                  <p><strong>Établissement:</strong> {company?.bank_name || 'QONTO'}</p>
+                  <p><strong>IBAN:</strong> {company?.iban}</p>
+                  <p><strong>BIC:</strong> {company?.bic}</p>
                 </div>
               </div>
             </CardContent>
