@@ -146,6 +146,7 @@ class QuoteLineItem(BaseModel):
 class QuoteCreate(BaseModel):
     client_id: str
     expiration_date: str
+    event_date: Optional[str] = None
     items: List[QuoteLineItem]
     discount: float = 0.0
     notes: Optional[str] = None
@@ -153,6 +154,7 @@ class QuoteCreate(BaseModel):
 class QuoteUpdate(BaseModel):
     client_id: Optional[str] = None
     expiration_date: Optional[str] = None
+    event_date: Optional[str] = None
     items: Optional[List[QuoteLineItem]] = None
     discount: Optional[float] = None
     notes: Optional[str] = None
