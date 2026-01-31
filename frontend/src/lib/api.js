@@ -41,6 +41,7 @@ export const convertQuoteToInvoice = (id) => axios.post(`${API}/quotes/${id}/con
 // Invoices
 export const getInvoices = () => axios.get(`${API}/invoices`, getAuthHeader());
 export const getInvoice = (id) => axios.get(`${API}/invoices/${id}`, getAuthHeader());
+export const getInvoicePdf = (id) => axios.get(`${API}/invoices/${id}/pdf`, { ...getAuthHeader(), responseType: 'blob' });
 export const updateInvoiceStatus = (id, status) => axios.put(`${API}/invoices/${id}/status?status=${status}`, {}, getAuthHeader());
 export const addPaymentToInvoice = (id, data) => axios.post(`${API}/invoices/${id}/payment`, data, getAuthHeader());
 export const deletePayment = (invoiceId, paymentId) => axios.delete(`${API}/invoices/${invoiceId}/payment/${paymentId}`, getAuthHeader());
