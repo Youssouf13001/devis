@@ -396,12 +396,12 @@ const QuoteEditor = () => {
                     />
                   </div>
                   {/* Company Info Box */}
-                  <div className="w-1/2 border border-slate-300 p-3 text-xs">
-                    <p className="text-slate-500 text-[10px] mb-1">Émetteur ou Émettrice</p>
-                    <p className="font-bold text-slate-800">{company?.name || 'CREATIVINDUSTRY'}</p>
-                    <p>{company?.address}</p>
-                    <p>{company?.email}</p>
-                    <p>{company?.phone}</p>
+                  <div className="w-1/2 border border-slate-300 p-3">
+                    <p className="text-slate-500 text-[8px] mb-1">Émetteur ou Émettrice</p>
+                    <p className="font-bold text-slate-800 text-[10px]">{company?.name || 'CREATIVINDUSTRY'}</p>
+                    <p className="text-[10px]">{company?.address}</p>
+                    <p className="text-[10px]">{company?.email}</p>
+                    <p className="text-[10px]">{company?.phone}</p>
                   </div>
                 </div>
 
@@ -409,25 +409,25 @@ const QuoteEditor = () => {
                 <div className="flex justify-between mb-4">
                   {/* Devis Info */}
                   <div className="w-1/2">
-                    <h3 className="text-lg font-bold text-slate-800 mb-2">Devis</h3>
-                    <div className="text-xs space-y-1">
-                      <div className="flex"><span className="font-semibold w-32">Numéro</span><span>D-2026-XXX</span></div>
-                      <div className="flex"><span className="font-semibold w-32">Date d'émission</span><span>{formatDate(new Date().toISOString().split('T')[0])}</span></div>
-                      <div className="flex"><span className="font-semibold w-32">Date d'expiration</span><span>{formatDate(formData.expiration_date)}</span></div>
-                      <div className="flex"><span className="font-semibold w-32">Type de vente</span><span>Prestations de services</span></div>
+                    <h3 className="text-base font-bold text-slate-800 mb-2">Devis</h3>
+                    <div className="text-[10px] space-y-0.5">
+                      <div className="flex"><span className="font-semibold w-28">Numéro</span><span>D-2026-XXX</span></div>
+                      <div className="flex"><span className="font-semibold w-28">Date d'émission</span><span>{formatDate(new Date().toISOString().split('T')[0])}</span></div>
+                      <div className="flex"><span className="font-semibold w-28">Date d'expiration</span><span>{formatDate(formData.expiration_date)}</span></div>
+                      <div className="flex"><span className="font-semibold w-28">Type de vente</span><span>Prestations de services</span></div>
                       {formData.event_date && (
-                        <div className="flex"><span className="font-semibold w-32">Date événement</span><span>{formatDate(formData.event_date)}</span></div>
+                        <div className="flex"><span className="font-semibold w-28">Date événement</span><span>{formatDate(formData.event_date)}</span></div>
                       )}
                     </div>
                   </div>
                   {/* Client Info Box */}
                   {selectedClient && (
-                    <div className="w-1/2 border border-slate-300 p-3 text-xs">
-                      <p className="text-slate-500 text-[10px] mb-1">Client ou Cliente</p>
-                      <p className="font-bold text-slate-800">{selectedClient.name}</p>
-                      <p>{selectedClient.address}</p>
-                      <p>{selectedClient.email}</p>
-                      <p>{selectedClient.phone}</p>
+                    <div className="w-1/2 border border-slate-300 p-3">
+                      <p className="text-slate-500 text-[8px] mb-1">Client ou Cliente</p>
+                      <p className="font-bold text-slate-800 text-[10px]">{selectedClient.name}</p>
+                      <p className="text-[10px]">{selectedClient.address}</p>
+                      <p className="text-[10px]">{selectedClient.email}</p>
+                      <p className="text-[10px]">{selectedClient.phone}</p>
                     </div>
                   )}
                 </div>
