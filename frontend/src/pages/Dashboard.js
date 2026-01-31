@@ -154,13 +154,7 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle style={{ fontFamily: 'Manrope' }}>Actions Rapides</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <Link to="/quotes/new">
-              <Button variant="outline" className="w-full h-20 flex-col gap-2" data-testid="quick-new-quote">
-                <FileText size={24} />
-                <span>Créer un devis</span>
-              </Button>
-            </Link>
+          <CardContent className="grid grid-cols-3 gap-4">
             <Link to="/clients">
               <Button variant="outline" className="w-full h-20 flex-col gap-2" data-testid="quick-clients">
                 <Users size={24} />
