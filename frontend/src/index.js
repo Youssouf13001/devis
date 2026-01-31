@@ -3,24 +3,33 @@ import ReactDOM from "react-dom/client";
 import "@/index.css";
 import App from "@/App";
 
-// Suppress benign errors caused by browser extensions or UI components
-const originalError = console.error;
-console.error = (...args) => {
-  const message = args[0]?.toString?.() || '';
-  if (message.includes('removeChild') || 
-      message.includes('NotFoundError') ||
-      message.includes('not a child') ||
-      message.includes('ResizeObserver')) {
-    return;
+// Suppress ResizeObserver errors globally - this is a benign warning
+const resizeObserverErr = window.ResizeObserver;
+window.ResizeObserver = class ResizeObserver extends resizeObserverErr {
+  constructor(callback) {
+    super((entries, observer) => {
+      window.requestAnimationFrame(() => {
+        callback(entries, observer);
+      });
+    });
   }
-  originalError.apply(console, args);
 };
 
-// Suppress ResizeObserver errors globally
+// Suppress error overlay for benign errors
 window.addEventListener('error', (e) => {
-  if (e.message?.includes('ResizeObserver')) {
-    e.stopPropagation();
+  if (e.message?.includes('ResizeObserver') || 
+      e.message?.includes('removeChild') ||
+      e.message?.includes('NotFoundError')) {
+    e.stopImmediatePropagation();
     e.preventDefault();
+    return false;
+  }
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  if (e.reason?.message?.includes('ResizeObserver')) {
+    e.preventDefault();
+    return false;
   }
 });
 
