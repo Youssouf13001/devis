@@ -1007,7 +1007,7 @@ async def get_quote_pdf(quote_id: str, user: dict = Depends(get_current_user)):
 
 # ============ EMAIL SENDING (IONOS SMTP) ============
 
-async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes, tracking_url: str) -> dict:
+async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes, tracking_url: str, custom_message: str = None) -> dict:
     """Send quote via email with PDF attachment using IONOS SMTP"""
     if not SMTP_EMAIL or not SMTP_PASSWORD:
         logger.error("SMTP not configured")
@@ -1020,14 +1020,21 @@ async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes, trackin
         msg['To'] = quote['client_email']
         msg['Subject'] = f"Devis {quote['quote_number']} - {company.get('name', 'CREATIVINDUSTRY')}"
         
+        # Use custom message or default
+        if custom_message:
+            # Convert newlines to <br> for HTML
+            message_html = custom_message.replace('\n', '<br>')
+        else:
+            message_html = f"""Veuillez trouver ci-joint notre devis <strong>{quote['quote_number']}</strong> d'un montant de <strong>{quote['total_ttc']:,.2f} € TTC</strong>.<br><br>
+            Ce devis est valable jusqu'au <strong>{quote['expiration_date']}</strong>.<br><br>
+            N'hésitez pas à nous contacter pour toute question."""
+        
         # HTML body with tracking pixel
         html_body = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <h2 style="color: #d97706;">Bonjour {quote['client_name']},</h2>
-            <p>Veuillez trouver ci-joint notre devis <strong>{quote['quote_number']}</strong> d'un montant de <strong>{quote['total_ttc']:,.2f} € TTC</strong>.</p>
-            <p>Ce devis est valable jusqu'au <strong>{quote['expiration_date']}</strong>.</p>
-            <p>N'hésitez pas à nous contacter pour toute question.</p>
+            <p>{message_html}</p>
             <br>
             <p>Cordialement,</p>
             <p><strong>{company.get('name', 'CREATIVINDUSTRY')}</strong><br>
@@ -1065,6 +1072,10 @@ async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes, trackin
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
         return {"success": False, "error": str(e)}
+
+# Model for email request
+class SendEmailRequest(BaseModel):
+    message: Optional[str] = None
 
 @api_router.post("/quotes/{quote_id}/send")
 async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dict = Depends(get_current_user)):
