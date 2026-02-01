@@ -174,11 +174,11 @@ const QuoteEditor = () => {
     <div className="space-y-6 animate-slide-in" data-testid="quote-editor">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/quotes")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/quotes")} className="text-slate-400 hover:text-white hover:bg-white/10">
           <ArrowLeft size={20} />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+          <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Manrope' }}>
             {isEditing ? "Modifier le devis" : "Nouveau devis"}
           </h1>
         </div>
@@ -189,15 +189,15 @@ const QuoteEditor = () => {
         <div className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Client Selection */}
-            <Card>
+            <Card className="glass-card border-white/10">
               <CardHeader>
-                <CardTitle style={{ fontFamily: 'Manrope' }} className="text-amber-700">Client</CardTitle>
+                <CardTitle style={{ fontFamily: 'Manrope' }} className="text-amber-500">Client</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Sélectionner un client</Label>
+                  <Label className="text-slate-300">Sélectionner un client</Label>
                   <Select value={formData.client_id} onValueChange={handleClientChange}>
-                    <SelectTrigger data-testid="client-select">
+                    <SelectTrigger data-testid="client-select" className="bg-slate-900/50 border-white/10 text-white">
                       <SelectValue placeholder="Choisir un client" />
                     </SelectTrigger>
                     <SelectContent>
