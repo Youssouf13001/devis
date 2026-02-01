@@ -11,6 +11,36 @@ import Services from "./pages/Services";
 import Invoices from "./pages/Invoices";
 import Settings from "./pages/Settings";
 import Layout from "./components/Layout";
+import { FileText } from "lucide-react";
+
+const CustomBadge = () => (
+  <div
+    id="creativindustry-badge"
+    style={{
+      display: 'inline-flex',
+      boxSizing: 'border-box',
+      width: '190px',
+      height: '40px',
+      padding: '8px 12px',
+      alignItems: 'center',
+      gap: '8px',
+      borderRadius: '50px',
+      background: '#d97706',
+      position: 'fixed',
+      bottom: '16px',
+      right: '16px',
+      textDecoration: 'none',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '13px',
+      fontWeight: '600',
+      color: 'white',
+      zIndex: 9999,
+    }}
+  >
+    <FileText size={16} />
+    <span>Application interne v1</span>
+  </div>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
