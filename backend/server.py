@@ -1007,7 +1007,7 @@ async def get_quote_pdf(quote_id: str, user: dict = Depends(get_current_user)):
 
 # ============ EMAIL SENDING (IONOS SMTP) ============
 
-async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes) -> dict:
+async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes, tracking_url: str) -> dict:
     """Send quote via email with PDF attachment using IONOS SMTP"""
     if not SMTP_EMAIL or not SMTP_PASSWORD:
         logger.error("SMTP not configured")
@@ -1020,7 +1020,7 @@ async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes) -> dict
         msg['To'] = quote['client_email']
         msg['Subject'] = f"Devis {quote['quote_number']} - {company.get('name', 'CREATIVINDUSTRY')}"
         
-        # HTML body
+        # HTML body with tracking pixel
         html_body = f"""
         <html>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -1033,6 +1033,7 @@ async def send_quote_email(quote: dict, company: dict, pdf_bytes: bytes) -> dict
             <p><strong>{company.get('name', 'CREATIVINDUSTRY')}</strong><br>
             {company.get('phone', '')}<br>
             {company.get('email', '')}</p>
+            <img src="{tracking_url}" width="1" height="1" style="display:none;" alt="" />
         </body>
         </html>
         """
