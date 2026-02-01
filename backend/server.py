@@ -1102,12 +1102,36 @@ async def send_quote(quote_id: str, request: SendEmailRequest = None, user: dict
     if result["success"]:
         await db.quotes.update_one(
             {"id": quote_id},
-            {"$set": {"status": "envoyé", "sent_at": datetime.now(timezone.utc).isoformat()}}
+            {
+                "$set": {"status": "envoyé", "sent_at": datetime.now(timezone.utc).isoformat()},
+                "$inc": {"send_count": 1}
+            }
         )
         return {"message": "Devis envoyé avec succès", "status": "success"}
     else:
         error_msg = result.get("error", "Erreur lors de l'envoi de l'email")
         raise HTTPException(status_code=400, detail=error_msg)
+
+@api_router.get("/quotes/{quote_id}/email-preview")
+async def get_email_preview(quote_id: str, user: dict = Depends(get_current_user)):
+    """Get the default email message for a quote"""
+    quote = await db.quotes.find_one({"id": quote_id, "user_id": user['id']}, {"_id": 0})
+    if not quote:
+        raise HTTPException(status_code=404, detail="Devis non trouvé")
+    
+    default_message = f"""Veuillez trouver ci-joint notre devis {quote['quote_number']} d'un montant de {quote['total_ttc']:,.2f} € TTC.
+
+Ce devis est valable jusqu'au {quote['expiration_date']}.
+
+N'hésitez pas à nous contacter pour toute question."""
+    
+    return {
+        "client_name": quote['client_name'],
+        "client_email": quote['client_email'],
+        "quote_number": quote['quote_number'],
+        "default_message": default_message,
+        "send_count": quote.get('send_count', 0)
+    }
 
 # ============ EMAIL TRACKING ============
 
