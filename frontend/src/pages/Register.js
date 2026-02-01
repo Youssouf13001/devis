@@ -40,7 +40,7 @@ const Register = () => {
       {/* Left side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
-          <div className="flex items-center justify-center mb-8 bg-black rounded-xl p-4">
+          <div className="flex items-center justify-center mb-8">
             <img 
               src="https://customer-assets.emergentagent.com/job_df4bb327-88bd-4623-9022-ebd45334706b/artifacts/7xmtrxds_Nvo%20logo%20Creativindustry%20France.png" 
               alt="CREATIVINDUSTRY France" 
