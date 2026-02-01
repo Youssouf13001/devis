@@ -1,145 +1,135 @@
 {
-  "design_system": {
-    "typography": {
-      "font_family": {
-        "heading": "Manrope, sans-serif",
-        "body": "Inter, sans-serif",
-        "mono": "JetBrains Mono, monospace"
-      },
-      "imports": [
-        "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;600;700;800&display=swap');"
-      ],
-      "scale": {
-        "h1": "text-4xl font-extrabold tracking-tight lg:text-5xl",
-        "h2": "text-3xl font-bold tracking-tight",
-        "h3": "text-2xl font-semibold tracking-tight",
-        "p": "leading-7 [&:not(:first-child)]:mt-6",
-        "small": "text-sm font-medium leading-none"
-      }
+  "identity": {
+    "name": "E1",
+    "role": "Anti-AI Designer",
+    "mission": "Create a 'Lightning Dark' event management interface that feels like a backstage pass—exclusive, vibrant, and precise.",
+    "principles": [
+      "Fusion over Imitation: Mix 'Backstage Tech' with 'Wedding Elegance'.",
+      "Emotion First: The app should feel like the excitement before a show starts.",
+      "Content is King: Data is the star, UI is the stage lighting.",
+      "Contrast: Neon accents against deep void backgrounds."
+    ]
+  },
+  "theme_strategy": {
+    "mode": "dark",
+    "style_name": "Lightning Dark",
+    "description": "A deep, immersive dark mode with vibrant, glowing accents that reduce eye strain while maintaining high energy.",
+    "background_base": "#020617",
+    "surface_glass": "rgba(15, 23, 42, 0.6)",
+    "primary_glow": "0 0 20px rgba(245, 158, 11, 0.3)"
+  },
+  "typography": {
+    "headings": {
+      "family": "Manrope, sans-serif",
+      "weights": ["600", "700", "800"],
+      "usage": "Use for all page titles, card headers, and major metrics.",
+      "letter_spacing": "-0.02em"
     },
-    "colors": {
-      "palette": {
-        "primary": {
-          "DEFAULT": "#0F172A",
-          "foreground": "#F8FAFC"
-        },
-        "secondary": {
-          "DEFAULT": "#F1F5F9",
-          "foreground": "#0F172A"
-        },
-        "accent": {
-          "DEFAULT": "#0EA5E9",
-          "foreground": "#FFFFFF"
-        },
-        "muted": {
-          "DEFAULT": "#F8FAFC",
-          "foreground": "#64748B"
-        },
-        "destructive": {
-          "DEFAULT": "#EF4444",
-          "foreground": "#FFFFFF"
-        },
-        "success": {
-          "DEFAULT": "#10B981",
-          "foreground": "#FFFFFF"
-        },
-        "warning": {
-          "DEFAULT": "#F59E0B",
-          "foreground": "#FFFFFF"
-        }
-      },
-      "usage": {
-        "background": "bg-slate-50",
-        "paper": "bg-white border border-slate-200 shadow-sm",
-        "sidebar": "bg-white border-r border-slate-200",
-        "text_primary": "text-slate-900",
-        "text_secondary": "text-slate-500"
-      }
+    "body": {
+      "family": "Inter, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Standard text, tables, inputs.",
+      "letter_spacing": "0"
     },
-    "spacing": {
-      "container_padding": "p-6 md:p-8 lg:p-12",
-      "section_gap": "gap-8",
-      "component_gap": "gap-4"
-    },
-    "visual_enhancers": {
-      "radius": "rounded-lg",
-      "shadows": {
-        "card": "shadow-[0_1px_3px_0_rgb(0,0,0,0.1),0_1px_2px_-1px_rgb(0,0,0,0.1)]",
-        "float": "shadow-[0_10px_15px_-3px_rgb(0,0,0,0.1),0_4px_6px_-4px_rgb(0,0,0,0.1)]"
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400"],
+      "usage": "IDs, invoice numbers, code snippets, financial data alignment."
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": {
+        "DEFAULT": "#020617",
+        "secondary": "#0f172a"
       },
-      "borders": "border border-slate-200"
+      "primary": {
+        "DEFAULT": "#f59e0b",
+        "foreground": "#ffffff",
+        "glow": "#fbbf24"
+      },
+      "secondary": {
+        "DEFAULT": "#8b5cf6",
+        "foreground": "#ffffff"
+      },
+      "accent": {
+        "cyan": "#06b6d4",
+        "pink": "#ec4899",
+        "lime": "#84cc16"
+      },
+      "muted": {
+        "DEFAULT": "#1e293b",
+        "foreground": "#94a3b8"
+      },
+      "border": "rgba(255, 255, 255, 0.08)"
+    },
+    "gradients": {
+      "brand": "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+      "glass": "linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)",
+      "glow_mesh": "radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 70%)"
+    }
+  },
+  "layout": {
+    "grid_system": "Bento Grid",
+    "spacing_scale": "Generous (2x standard)",
+    "container_padding": "p-6 md:p-8 lg:p-12",
+    "border_radius": {
+      "outer": "rounded-2xl",
+      "inner": "rounded-xl",
+      "button": "rounded-full"
     }
   },
   "components": {
-    "buttons": {
-      "primary": "bg-slate-900 text-white hover:bg-slate-800 shadow-sm rounded-md px-4 py-2 font-medium transition-all active:scale-95",
-      "secondary": "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 shadow-sm rounded-md px-4 py-2 font-medium transition-all active:scale-95",
-      "ghost": "hover:bg-slate-100 text-slate-700 hover:text-slate-900 rounded-md px-4 py-2 transition-colors",
-      "destructive": "bg-red-500 text-white hover:bg-red-600 shadow-sm rounded-md px-4 py-2 font-medium transition-all"
-    },
     "cards": {
-      "dashboard_metric": "bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow",
-      "quote_preview": "bg-white aspect-[210/297] w-full max-w-3xl mx-auto shadow-lg border border-slate-200 p-12 print:shadow-none print:border-none"
+      "style": "Glassmorphism",
+      "classes": "bg-slate-950/40 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/20",
+      "hover": "hover:border-white/20 hover:bg-slate-900/60 transition-all duration-300"
+    },
+    "buttons": {
+      "primary": "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:scale-105 transition-all duration-300 rounded-full font-bold tracking-wide",
+      "secondary": "bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20 backdrop-blur-md rounded-full"
     },
     "inputs": {
-      "default": "flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-      "currency": "font-mono text-right"
+      "style": "Minimalist Dark",
+      "classes": "bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500 focus:border-amber-500/50 focus:ring-amber-500/20 rounded-xl h-12"
     },
-    "tables": {
-      "header": "bg-slate-50 text-slate-500 font-medium text-xs uppercase tracking-wider border-b border-slate-200",
-      "row": "border-b border-slate-100 hover:bg-slate-50/50 transition-colors",
-      "cell": "p-4 text-sm text-slate-700"
-    },
-    "badges": {
-      "base": "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2",
-      "status_sent": "border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200",
-      "status_accepted": "border-transparent bg-emerald-100 text-emerald-800 hover:bg-emerald-200",
-      "status_refused": "border-transparent bg-red-100 text-red-800 hover:bg-red-200",
-      "status_draft": "border-transparent bg-slate-100 text-slate-800 hover:bg-slate-200"
+    "sidebar": {
+      "style": "Floating Glass",
+      "classes": "bg-slate-950/80 backdrop-blur-2xl border-r border-white/5"
     }
   },
-  "layout_strategies": {
-    "dashboard": {
-      "type": "bento_grid",
-      "grid_cols": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4",
-      "gap": "gap-6",
-      "sidebar_width": "w-64"
-    },
-    "quote_editor": {
-      "type": "split_screen",
-      "left_panel": "w-full lg:w-1/3 border-r border-slate-200 bg-slate-50/50 p-6 overflow-y-auto h-screen sticky top-0",
-      "right_panel": "w-full lg:w-2/3 bg-slate-100 p-8 flex justify-center items-start overflow-y-auto"
+  "visual_enhancers": {
+    "textures": "Add a subtle noise texture overlay (opacity 0.03) to the entire app background to reduce digital flatness.",
+    "glows": "Use colored blurs behind major dashboard cards to indicate status (Green for income, Red for expenses).",
+    "motion": {
+      "page_transition": "Fade up (opacity 0 -> 1, y 20px -> 0px)",
+      "hover_lift": "transform: translateY(-2px)",
+      "micro_interactions": "Buttons should have a 'press' scale effect (0.98)."
     }
   },
   "assets": {
     "images": {
-      "login_bg": "https://images.unsplash.com/photo-1586745370973-343d1ba81ed2?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "default_logo": "https://images.unsplash.com/photo-1633412802994-5c058f151b66?crop=entropy&cs=srgb&fm=jpg&q=85",
-      "empty_state": "https://images.unsplash.com/photo-1591222380707-dcde425cc8ac?crop=entropy&cs=srgb&fm=jpg&q=85"
+      "hero_bg": "https://images.unsplash.com/photo-1740459057005-65f000db582f?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "event_concert": "https://images.unsplash.com/photo-1709731191876-899e32264420?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "event_wedding": "https://images.unsplash.com/photo-1768777270882-9f74939fee50?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "wedding_detail": "https://images.unsplash.com/photo-1763553113332-800519753e40?crop=entropy&cs=srgb&fm=jpg&q=85"
     },
-    "icons": "lucide-react"
-  },
-  "accessibility": {
-    "contrast_check": "Ensure text-slate-500 is not used on dark backgrounds. Use text-slate-400 or lighter.",
-    "focus_states": "All interactive elements must have visible focus rings (ring-2 ring-slate-950).",
-    "aria_labels": "Required for all icon-only buttons."
+    "icons": "Use Lucide React (already installed). Stroke width: 1.5px for elegance."
   },
   "instructions_to_main_agent": [
-    "Use 'Manrope' for all Headings (h1-h3) and 'Inter' for body text.",
-    "Use 'JetBrains Mono' for all financial data (prices, totals, IBANs).",
-    "Implement the Dashboard using the Bento Grid strategy (Mode B from E1 rules).",
-    "The Quote Editor MUST look like a real A4 paper on the screen (white box with shadow on gray background).",
-    "Use French terminology for all UI elements (Devis, Facture, Client, Montant HT, TVA, TTC).",
-    "Ensure all buttons have a 'data-testid' attribute.",
-    "Do not use gradients for backgrounds. Use solid colors or subtle borders.",
-    "For the 'Status' column in tables, use the Badge component styles defined above.",
-    "The Sidebar should be fixed on the left, white background, with a subtle right border."
+    "1. UPDATE TAILWIND CONFIG: Extend the theme with the 'Lightning Dark' palette. Add 'animation' utilities for soft glows.",
+    "2. GLOBAL CSS: Set the body background to #020617 and add the noise texture.",
+    "3. COMPONENT OVERRIDES: Customize Shadcn components (Card, Button, Input) in `components/ui` to match the Glassmorphism style defined above.",
+    "4. DASHBOARD LAYOUT: Implement a Bento Grid layout. Use the 'event_concert' image as a subtle background for the 'Upcoming Events' card.",
+    "5. QUOTE EDITOR: Make the preview look like a physical paper sheet floating on a dark glass desk (shadow-2xl).",
+    "6. CRITICAL: Do not use pure black (#000000). Use Slate-950 (#020617) as the darkest shade.",
+    "7. ACCESSIBILITY: Ensure all text on dark backgrounds is at least Slate-200 or White. Avoid dark gray text."
   ],
   "universal_guidelines": [
-    "Avoid generic centered layouts. Use asymmetry where possible.",
-    "Use 2-3x more spacing than typical designs (p-8 instead of p-4).",
-    "Every interaction needs micro-animations (hover, active, focus).",
-    "Use 'sonner' for toast notifications.",
-    "Prioritize Shadcn UI components but customize them with the classes defined in 'components' section."
+    "Don't make generic centered layouts.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable."
   ]
 }
