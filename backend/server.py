@@ -1079,8 +1079,11 @@ async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dic
     # Generate PDF
     pdf_bytes = generate_quote_pdf(quote, company)
     
-    # Send email
-    result = await send_quote_email(quote, company, pdf_bytes)
+    # Generate tracking URL
+    tracking_url = f"https://quotecreator-6.preview.emergentagent.com/api/track/{quote_id}/open.png"
+    
+    # Send email with tracking
+    result = await send_quote_email(quote, company, pdf_bytes, tracking_url)
     
     if result["success"]:
         await db.quotes.update_one(
@@ -1091,6 +1094,44 @@ async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dic
     else:
         error_msg = result.get("error", "Erreur lors de l'envoi de l'email")
         raise HTTPException(status_code=400, detail=error_msg)
+
+# ============ EMAIL TRACKING ============
+
+# 1x1 transparent PNG pixel
+TRACKING_PIXEL = bytes([
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+    0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+    0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+    0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+    0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+])
+
+@api_router.get("/track/{quote_id}/open.png")
+async def track_email_open(quote_id: str):
+    """Track when a quote email is opened"""
+    # Update the quote with open tracking
+    result = await db.quotes.update_one(
+        {"id": quote_id},
+        {
+            "$set": {"opened_at": datetime.now(timezone.utc).isoformat()},
+            "$inc": {"open_count": 1}
+        }
+    )
+    
+    if result.modified_count > 0:
+        logger.info(f"Email opened for quote {quote_id}")
+    
+    # Return a 1x1 transparent pixel
+    return Response(
+        content=TRACKING_PIXEL,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
 
 # ============ INVOICES ROUTES ============
 
