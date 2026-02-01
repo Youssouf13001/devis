@@ -300,6 +300,101 @@ const Quotes = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Email Modal */}
+      <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
+        <DialogContent className="sm:max-w-lg bg-slate-900 border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white flex items-center gap-2" style={{ fontFamily: 'Manrope' }}>
+              <Send className="text-amber-500" size={24} />
+              {emailData?.send_count > 0 ? "Relancer le devis" : "Envoyer le devis"}
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Personnalisez le message avant l'envoi
+            </DialogDescription>
+          </DialogHeader>
+          
+          {emailData && (
+            <div className="space-y-4">
+              {/* Recipient info */}
+              <div className="bg-slate-800/50 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-slate-400 text-sm">Destinataire</span>
+                  <span className="text-white font-medium">{emailData.client_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 text-sm">Email</span>
+                  <span className="text-cyan-400">{emailData.client_email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400 text-sm">Devis</span>
+                  <span className="text-amber-400 font-mono">{emailData.quote_number}</span>
+                </div>
+                {emailData.send_count > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400 text-sm">Déjà envoyé</span>
+                    <span className="text-violet-400">{emailData.send_count} fois</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Message */}
+              <div className="space-y-2">
+                <Label className="text-slate-300">Message</Label>
+                <Textarea
+                  value={emailMessage}
+                  onChange={(e) => setEmailMessage(e.target.value)}
+                  rows={6}
+                  className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 focus:border-amber-500/50"
+                  placeholder="Votre message personnalisé..."
+                />
+                <p className="text-xs text-slate-500">
+                  Le message sera précédé de "Bonjour {emailData.client_name}," et suivi de votre signature.
+                </p>
+              </div>
+
+              {/* Reset to default */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setEmailMessage(emailData.default_message)}
+                className="text-slate-400 hover:text-white"
+              >
+                <RefreshCw size={14} className="mr-2" />
+                Réinitialiser le message par défaut
+              </Button>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setEmailModalOpen(false)}
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSendEmail}
+              disabled={sending}
+              className="btn-glow"
+            >
+              {sending ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Envoi...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Send size={18} />
+                  {emailData?.send_count > 0 ? "Relancer" : "Envoyer"}
+                </span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
