@@ -232,6 +232,15 @@ class DashboardStats(BaseModel):
     total_clients: int
     total_services: int
 
+# ============ PASSWORD RESET MODELS ============
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
 # ============ AUTH HELPERS ============
 
 def hash_password(password: str) -> str:
@@ -239,6 +248,10 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+def generate_reset_token() -> str:
+    import secrets
+    return secrets.token_urlsafe(32)
 
 def create_token(user_id: str) -> str:
     payload = {
@@ -316,6 +329,140 @@ async def login(user: UserLogin):
 @api_router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: dict = Depends(get_current_user)):
     return UserResponse(**user)
+
+# ============ PASSWORD RESET ROUTES ============
+
+async def send_reset_email(email: str, reset_token: str, user_name: str) -> dict:
+    """Send password reset email via IONOS SMTP"""
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+        logger.error("SMTP not configured")
+        return {"success": False, "error": "Configuration SMTP manquante"}
+    
+    try:
+        # Build reset URL - use frontend URL
+        frontend_url = os.environ.get('FRONTEND_URL', 'https://creativindustry.com/devis')
+        reset_url = f"{frontend_url}/reset-password?token={reset_token}"
+        
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_EMAIL
+        msg['To'] = email
+        msg['Subject'] = "Réinitialisation de votre mot de passe - CREATIVINDUSTRY"
+        
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h2 style="color: #d97706; margin-bottom: 20px;">Bonjour {user_name},</h2>
+                <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
+                <p>Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" style="display: inline-block; background-color: #d97706; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+                        Réinitialiser mon mot de passe
+                    </a>
+                </div>
+                <p style="color: #666; font-size: 14px;">Ce lien est valable pendant <strong>1 heure</strong>.</p>
+                <p style="color: #666; font-size: 14px;">Si vous n'avez pas demandé cette réinitialisation, ignorez simplement cet email.</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                <p style="color: #999; font-size: 12px;">CREATIVINDUSTRY - Application de gestion</p>
+            </div>
+        </body>
+        </html>
+        """
+        msg.attach(MIMEText(html_body, 'html'))
+        
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, context=context, timeout=30) as server:
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, email, msg.as_string())
+        
+        logger.info(f"Reset email sent to {email}")
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Failed to send reset email: {e}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Send password reset email"""
+    user = await db.users.find_one({"email": request.email}, {"_id": 0})
+    
+    # Always return success to prevent email enumeration
+    if not user:
+        logger.info(f"Password reset requested for non-existent email: {request.email}")
+        return {"message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+    
+    # Generate reset token
+    reset_token = generate_reset_token()
+    expiration = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    # Store token in database
+    await db.password_resets.delete_many({"user_id": user['id']})  # Remove old tokens
+    await db.password_resets.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user['id'],
+        "email": request.email,
+        "token": reset_token,
+        "expires_at": expiration.isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Send email
+    result = await send_reset_email(request.email, reset_token, user.get('name', 'Utilisateur'))
+    
+    if not result["success"]:
+        logger.error(f"Failed to send reset email: {result.get('error')}")
+    
+    return {"message": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation."}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """Reset password with token"""
+    # Find the reset token
+    reset_record = await db.password_resets.find_one({"token": request.token}, {"_id": 0})
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Lien de réinitialisation invalide ou expiré")
+    
+    # Check expiration
+    expires_at = datetime.fromisoformat(reset_record['expires_at'].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.password_resets.delete_one({"token": request.token})
+        raise HTTPException(status_code=400, detail="Ce lien a expiré. Veuillez faire une nouvelle demande.")
+    
+    # Validate password
+    if len(request.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Le mot de passe doit contenir au moins 6 caractères")
+    
+    # Update password
+    hashed = hash_password(request.new_password)
+    result = await db.users.update_one(
+        {"id": reset_record['user_id']},
+        {"$set": {"password": hashed}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Erreur lors de la mise à jour du mot de passe")
+    
+    # Delete the used token
+    await db.password_resets.delete_one({"token": request.token})
+    
+    logger.info(f"Password reset successful for user {reset_record['user_id']}")
+    return {"message": "Mot de passe réinitialisé avec succès"}
+
+@api_router.get("/auth/verify-reset-token/{token}")
+async def verify_reset_token(token: str):
+    """Verify if a reset token is valid"""
+    reset_record = await db.password_resets.find_one({"token": token}, {"_id": 0})
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Lien invalide")
+    
+    expires_at = datetime.fromisoformat(reset_record['expires_at'].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.password_resets.delete_one({"token": token})
+        raise HTTPException(status_code=400, detail="Ce lien a expiré")
+    
+    return {"valid": True, "email": reset_record['email']}
 
 # ============ COMPANY SETTINGS ROUTES ============
 
