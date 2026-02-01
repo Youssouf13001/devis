@@ -377,14 +377,14 @@ const QuoteEditor = () => {
 
         {/* Preview Section */}
         <div className="lg:sticky lg:top-8 h-fit">
-          <Card className="bg-slate-100 border-0">
+          <Card className="glass-card border-white/10">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-700" style={{ fontFamily: 'Manrope' }}>
+              <CardTitle className="flex items-center gap-2 text-white" style={{ fontFamily: 'Manrope' }}>
                 <Eye size={20} /> Aperçu
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-white shadow-lg border border-slate-200 p-6 text-sm" style={{ aspectRatio: '210/297', overflow: 'auto' }}>
+              <div className="bg-white shadow-2xl shadow-black/40 border border-slate-200 p-6 text-sm text-slate-900" style={{ aspectRatio: '210/297', overflow: 'auto' }}>
                 {/* Header - Logo + Company Info */}
                 <div className="flex justify-between mb-6">
                   {/* Logo */}
