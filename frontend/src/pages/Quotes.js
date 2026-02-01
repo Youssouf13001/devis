@@ -254,16 +254,21 @@ const Quotes = () => {
                             <MoreVertical size={20} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-white/10">
+                        <DropdownMenuContent align="end" className="w-52 bg-slate-900 border-white/10">
                           <DropdownMenuItem onClick={() => navigate(`/quotes/${quote.id}`)} className="text-slate-300 hover:text-white hover:bg-white/10">
                             <Eye size={16} className="mr-2" /> Voir / Modifier
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleDownloadPdf(quote.id, quote.client_name, quote.quote_number)} className="text-slate-300 hover:text-white hover:bg-white/10">
                             <Download size={16} className="mr-2" /> Télécharger PDF
                           </DropdownMenuItem>
-                          {quote.status === 'brouillon' && (
-                            <DropdownMenuItem onClick={() => handleSend(quote.id)} className="text-slate-300 hover:text-white hover:bg-white/10">
+                          <DropdownMenuSeparator className="bg-white/10" />
+                          {quote.status === 'brouillon' ? (
+                            <DropdownMenuItem onClick={() => openEmailModal(quote.id)} className="text-amber-400 hover:text-amber-300 hover:bg-amber-500/10">
                               <Send size={16} className="mr-2" /> Envoyer par email
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => openEmailModal(quote.id)} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10">
+                              <RefreshCw size={16} className="mr-2" /> Relancer par email
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator className="bg-white/10" />
