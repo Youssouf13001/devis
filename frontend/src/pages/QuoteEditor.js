@@ -211,21 +211,23 @@ const QuoteEditor = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Date d'expiration du devis</Label>
+                    <Label className="text-slate-300">Date d'expiration du devis</Label>
                     <Input
                       type="date"
                       value={formData.expiration_date}
                       onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
                       data-testid="expiration-date"
+                      className="bg-slate-900/50 border-white/10 text-white"
                     />
                   </div>
                   <div>
-                    <Label>Date de l'événement (mariage)</Label>
+                    <Label className="text-slate-300">Date de l'événement (mariage)</Label>
                     <Input
                       type="date"
                       value={formData.event_date}
                       onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
                       data-testid="event-date"
+                      className="bg-slate-900/50 border-white/10 text-white"
                     />
                   </div>
                 </div>
@@ -233,11 +235,11 @@ const QuoteEditor = () => {
             </Card>
 
             {/* Items Section */}
-            <Card>
+            <Card className="glass-card border-white/10">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle style={{ fontFamily: 'Manrope' }}>Prestations</CardTitle>
+                <CardTitle style={{ fontFamily: 'Manrope' }} className="text-violet-400">Prestations</CardTitle>
                 <Select onValueChange={addServiceToItems}>
-                  <SelectTrigger className="w-48" data-testid="add-service-select">
+                  <SelectTrigger className="w-48 bg-slate-900/50 border-white/10 text-white" data-testid="add-service-select">
                     <SelectValue placeholder="Ajouter prestation" />
                   </SelectTrigger>
                   <SelectContent>
@@ -251,23 +253,24 @@ const QuoteEditor = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {formData.items.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500">
+                  <div className="text-center py-8 text-slate-400">
                     <p>Aucune prestation ajoutée</p>
-                    <Button type="button" variant="outline" className="mt-4" onClick={addItem}>
+                    <Button type="button" variant="outline" className="mt-4 bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={addItem}>
                       <Plus size={16} className="mr-2" /> Ajouter manuellement
                     </Button>
                   </div>
                 ) : (
                   formData.items.map((item, index) => (
-                    <div key={index} className="p-4 border border-slate-200 rounded-lg space-y-3">
+                    <div key={index} className="p-4 border border-white/10 rounded-xl bg-slate-900/30 space-y-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1 mr-4">
-                          <Label>Désignation</Label>
+                          <Label className="text-slate-300">Désignation</Label>
                           <Input
                             value={item.service_name}
                             onChange={(e) => updateItem(index, 'service_name', e.target.value)}
                             placeholder="Nom de la prestation"
                             data-testid={`item-name-${index}`}
+                            className="bg-slate-900/50 border-white/10 text-white"
                           />
                         </div>
                         <Button
@@ -275,7 +278,7 @@ const QuoteEditor = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => removeItem(index)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                         >
                           <Trash2 size={18} />
                         </Button>
