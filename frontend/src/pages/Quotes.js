@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getQuotes, deleteQuote, sendQuote, getQuotePdf, updateQuote, convertQuoteToInvoice } from "../lib/api";
+import { getQuotes, deleteQuote, sendQuote, getQuotePdf, updateQuote, convertQuoteToInvoice, getEmailPreview } from "../lib/api";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -19,7 +19,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { Badge } from "../components/ui/badge";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
 import { 
   Plus, 
   MoreVertical, 
@@ -32,12 +42,17 @@ import {
   XCircle,
   Receipt,
   Mail,
-  MailOpen
+  MailOpen,
+  RefreshCw
 } from "lucide-react";
 
 const Quotes = () => {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailData, setEmailData] = useState(null);
+  const [emailMessage, setEmailMessage] = useState("");
+  const [sending, setSending] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +67,32 @@ const Quotes = () => {
       toast.error("Erreur lors du chargement des devis");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openEmailModal = async (quoteId) => {
+    try {
+      const response = await getEmailPreview(quoteId);
+      setEmailData({ ...response.data, quoteId });
+      setEmailMessage(response.data.default_message);
+      setEmailModalOpen(true);
+    } catch (error) {
+      toast.error("Erreur lors de la préparation de l'email");
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailData) return;
+    setSending(true);
+    try {
+      await sendQuote(emailData.quoteId, emailMessage);
+      toast.success("Devis envoyé avec succès !");
+      setEmailModalOpen(false);
+      loadQuotes();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
+    } finally {
+      setSending(false);
     }
   };
 
