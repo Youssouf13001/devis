@@ -30,7 +30,9 @@ import {
   FileText,
   CheckCircle,
   XCircle,
-  Receipt
+  Receipt,
+  Mail,
+  MailOpen
 } from "lucide-react";
 
 const Quotes = () => {
