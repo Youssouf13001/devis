@@ -293,18 +293,20 @@ const QuoteEditor = () => {
                             value={item.quantity}
                             onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                             data-testid={`item-qty-${index}`}
+                            className="bg-slate-900/50 border-white/10 text-white"
                           />
                         </div>
                         <div>
-                          <Label>Unité</Label>
+                          <Label className="text-slate-300">Unité</Label>
                           <Input
                             value={item.unit}
                             onChange={(e) => updateItem(index, 'unit', e.target.value)}
                             placeholder="heure"
+                            className="bg-slate-900/50 border-white/10 text-white"
                           />
                         </div>
                         <div>
-                          <Label>Prix HT</Label>
+                          <Label className="text-slate-300">Prix HT</Label>
                           <Input
                             type="number"
                             min="0"
@@ -312,35 +314,37 @@ const QuoteEditor = () => {
                             value={item.price_ht}
                             onChange={(e) => updateItem(index, 'price_ht', parseFloat(e.target.value) || 0)}
                             data-testid={`item-price-${index}`}
+                            className="bg-slate-900/50 border-white/10 text-white"
                           />
                         </div>
                         <div>
-                          <Label>TVA %</Label>
+                          <Label className="text-slate-300">TVA %</Label>
                           <Input
                             type="number"
                             min="0"
                             step="0.1"
                             value={item.tva_rate}
                             onChange={(e) => updateItem(index, 'tva_rate', parseFloat(e.target.value) || 0)}
+                            className="bg-slate-900/50 border-white/10 text-white"
                           />
                         </div>
                       </div>
-                      <div className="text-right text-sm font-medium">
-                        Total HT: <span className="font-mono">{formatCurrency(item.quantity * item.price_ht)}</span>
+                      <div className="text-right text-sm font-medium text-slate-300">
+                        Total HT: <span className="font-mono text-amber-400">{formatCurrency(item.quantity * item.price_ht)}</span>
                       </div>
                     </div>
                   ))
                 )}
 
                 {formData.items.length > 0 && (
-                  <Button type="button" variant="outline" className="w-full" onClick={addItem}>
+                  <Button type="button" variant="outline" className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={addItem}>
                     <Plus size={16} className="mr-2" /> Ajouter une ligne
                   </Button>
                 )}
 
                 {/* Discount */}
-                <div className="pt-4 border-t border-slate-200">
-                  <Label>Remise (€)</Label>
+                <div className="pt-4 border-t border-white/10">
+                  <Label className="text-slate-300">Remise (€)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -348,15 +352,16 @@ const QuoteEditor = () => {
                     value={formData.discount}
                     onChange={(e) => setFormData({ ...formData, discount: parseFloat(e.target.value) || 0 })}
                     data-testid="discount-input"
+                    className="bg-slate-900/50 border-white/10 text-white"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Notes */}
-            <Card>
+            <Card className="glass-card border-white/10">
               <CardHeader>
-                <CardTitle style={{ fontFamily: 'Manrope' }}>Notes</CardTitle>
+                <CardTitle style={{ fontFamily: 'Manrope' }} className="text-cyan-400">Notes</CardTitle>
               </CardHeader>
               <CardContent>
                 <Textarea
@@ -364,13 +369,14 @@ const QuoteEditor = () => {
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Notes additionnelles..."
                   rows={3}
+                  className="bg-slate-900/50 border-white/10 text-white placeholder:text-slate-500"
                 />
               </CardContent>
             </Card>
 
             {/* Submit */}
             <div className="flex gap-4">
-              <Button type="submit" className="flex-1 gap-2" disabled={saving} data-testid="save-quote-btn">
+              <Button type="submit" className="flex-1 gap-2 btn-glow rounded-xl" disabled={saving} data-testid="save-quote-btn">
                 <Save size={18} />
                 {saving ? "Enregistrement..." : "Enregistrer le devis"}
               </Button>
