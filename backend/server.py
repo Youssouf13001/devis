@@ -1078,7 +1078,7 @@ class SendEmailRequest(BaseModel):
     message: Optional[str] = None
 
 @api_router.post("/quotes/{quote_id}/send")
-async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dict = Depends(get_current_user)):
+async def send_quote(quote_id: str, request: SendEmailRequest = None, user: dict = Depends(get_current_user)):
     quote = await db.quotes.find_one({"id": quote_id, "user_id": user['id']}, {"_id": 0})
     if not quote:
         raise HTTPException(status_code=404, detail="Devis non trouvé")
@@ -1093,8 +1093,11 @@ async def send_quote(quote_id: str, background_tasks: BackgroundTasks, user: dic
     # Generate tracking URL
     tracking_url = f"https://quotecreator-6.preview.emergentagent.com/api/track/{quote_id}/open.png"
     
-    # Send email with tracking
-    result = await send_quote_email(quote, company, pdf_bytes, tracking_url)
+    # Get custom message if provided
+    custom_message = request.message if request else None
+    
+    # Send email with tracking and custom message
+    result = await send_quote_email(quote, company, pdf_bytes, tracking_url, custom_message)
     
     if result["success"]:
         await db.quotes.update_one(
