@@ -2,6 +2,17 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Create axios instance for public API calls (no auth required)
+const api = axios.create({
+  baseURL: process.env.REACT_APP_BACKEND_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Default export for public API calls
+export default api;
+
 const getAuthHeader = () => {
   const token = localStorage.getItem("token");
   return { headers: { Authorization: `Bearer ${token}` } };
