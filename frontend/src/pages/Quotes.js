@@ -180,15 +180,15 @@ const Quotes = () => {
       </div>
 
       {/* Quotes Table */}
-      <Card>
+      <Card className="glass-card border-white/10 overflow-hidden">
         <CardContent className="p-0">
           {quotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <FileText className="text-slate-300 mb-4" size={64} />
-              <h3 className="text-lg font-medium text-slate-900 mb-2">Aucun devis</h3>
-              <p className="text-slate-500 mb-4">Créez votre premier devis pour commencer</p>
+              <FileText className="text-slate-500 mb-4" size={64} />
+              <h3 className="text-lg font-medium text-white mb-2">Aucun devis</h3>
+              <p className="text-slate-400 mb-4">Créez votre premier devis pour commencer</p>
               <Link to="/quotes/new">
-                <Button data-testid="empty-new-quote-btn">
+                <Button className="btn-glow rounded-xl" data-testid="empty-new-quote-btn">
                   <Plus size={20} className="mr-2" />
                   Créer un devis
                 </Button>
@@ -197,57 +197,57 @@ const Quotes = () => {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50">
-                  <TableHead className="font-semibold">N° Devis</TableHead>
-                  <TableHead className="font-semibold">Client</TableHead>
-                  <TableHead className="font-semibold">Date</TableHead>
-                  <TableHead className="font-semibold">Montant TTC</TableHead>
-                  <TableHead className="font-semibold">Statut</TableHead>
-                  <TableHead className="font-semibold">Lecture</TableHead>
-                  <TableHead className="text-right font-semibold">Actions</TableHead>
+                <TableRow className="bg-slate-900/50 border-b border-white/10">
+                  <TableHead className="font-semibold text-slate-300">N° Devis</TableHead>
+                  <TableHead className="font-semibold text-slate-300">Client</TableHead>
+                  <TableHead className="font-semibold text-slate-300">Date</TableHead>
+                  <TableHead className="font-semibold text-slate-300">Montant TTC</TableHead>
+                  <TableHead className="font-semibold text-slate-300">Statut</TableHead>
+                  <TableHead className="font-semibold text-slate-300">Lecture</TableHead>
+                  <TableHead className="text-right font-semibold text-slate-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {quotes.map((quote) => (
-                  <TableRow key={quote.id} className="hover:bg-slate-50/50">
-                    <TableCell className="font-medium font-mono">{quote.quote_number}</TableCell>
-                    <TableCell>{quote.client_name}</TableCell>
-                    <TableCell>{formatDate(quote.emission_date)}</TableCell>
-                    <TableCell className="font-mono">{formatCurrency(quote.total_ttc)}</TableCell>
+                  <TableRow key={quote.id} className="hover:bg-white/5 border-b border-white/5">
+                    <TableCell className="font-medium font-mono text-amber-400">{quote.quote_number}</TableCell>
+                    <TableCell className="text-white">{quote.client_name}</TableCell>
+                    <TableCell className="text-slate-300">{formatDate(quote.emission_date)}</TableCell>
+                    <TableCell className="font-mono text-emerald-400">{formatCurrency(quote.total_ttc)}</TableCell>
                     <TableCell>{getStatusBadge(quote.status)}</TableCell>
                     <TableCell>{getReadStatus(quote)}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" data-testid={`quote-actions-${quote.id}`}>
+                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-white/10" data-testid={`quote-actions-${quote.id}`}>
                             <MoreVertical size={20} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => navigate(`/quotes/${quote.id}`)}>
+                        <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-white/10">
+                          <DropdownMenuItem onClick={() => navigate(`/quotes/${quote.id}`)} className="text-slate-300 hover:text-white hover:bg-white/10">
                             <Eye size={16} className="mr-2" /> Voir / Modifier
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDownloadPdf(quote.id, quote.client_name, quote.quote_number)}>
+                          <DropdownMenuItem onClick={() => handleDownloadPdf(quote.id, quote.client_name, quote.quote_number)} className="text-slate-300 hover:text-white hover:bg-white/10">
                             <Download size={16} className="mr-2" /> Télécharger PDF
                           </DropdownMenuItem>
                           {quote.status === 'brouillon' && (
-                            <DropdownMenuItem onClick={() => handleSend(quote.id)}>
+                            <DropdownMenuItem onClick={() => handleSend(quote.id)} className="text-slate-300 hover:text-white hover:bg-white/10">
                               <Send size={16} className="mr-2" /> Envoyer par email
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'accepté')}>
-                            <CheckCircle size={16} className="mr-2 text-emerald-600" /> Marquer accepté
+                          <DropdownMenuSeparator className="bg-white/10" />
+                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'accepté')} className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+                            <CheckCircle size={16} className="mr-2" /> Marquer accepté
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'refusé')}>
-                            <XCircle size={16} className="mr-2 text-red-600" /> Marquer refusé
+                          <DropdownMenuItem onClick={() => handleStatusChange(quote.id, 'refusé')} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                            <XCircle size={16} className="mr-2" /> Marquer refusé
                           </DropdownMenuItem>
                           {quote.status === 'accepté' && (
-                            <DropdownMenuItem onClick={() => handleConvertToInvoice(quote.id)}>
-                              <Receipt size={16} className="mr-2 text-blue-600" /> Convertir en facture
+                            <DropdownMenuItem onClick={() => handleConvertToInvoice(quote.id)} className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10">
+                              <Receipt size={16} className="mr-2" /> Convertir en facture
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuSeparator />
+                          <DropdownMenuSeparator className="bg-white/10" />
                           <DropdownMenuItem 
                             onClick={() => handleDelete(quote.id)}
                             className="text-red-600 focus:text-red-600"
