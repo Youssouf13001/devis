@@ -203,6 +203,7 @@ const Quotes = () => {
                   <TableHead className="font-semibold">Date</TableHead>
                   <TableHead className="font-semibold">Montant TTC</TableHead>
                   <TableHead className="font-semibold">Statut</TableHead>
+                  <TableHead className="font-semibold">Lecture</TableHead>
                   <TableHead className="text-right font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -214,6 +215,7 @@ const Quotes = () => {
                     <TableCell>{formatDate(quote.emission_date)}</TableCell>
                     <TableCell className="font-mono">{formatCurrency(quote.total_ttc)}</TableCell>
                     <TableCell>{getStatusBadge(quote.status)}</TableCell>
+                    <TableCell>{getReadStatus(quote)}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
