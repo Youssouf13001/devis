@@ -156,7 +156,7 @@ const Quotes = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+        <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -166,13 +166,13 @@ const Quotes = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Manrope' }}>
+          <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Manrope' }}>
             Devis
           </h1>
-          <p className="text-slate-500 mt-1">{quotes.length} devis au total</p>
+          <p className="text-slate-400 mt-1">{quotes.length} devis au total</p>
         </div>
         <Link to="/quotes/new">
-          <Button className="gap-2" data-testid="new-quote-btn">
+          <Button className="gap-2 btn-glow rounded-xl" data-testid="new-quote-btn">
             <Plus size={20} />
             Nouveau Devis
           </Button>
