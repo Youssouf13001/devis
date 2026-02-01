@@ -250,7 +250,7 @@ const Quotes = () => {
                           <DropdownMenuSeparator className="bg-white/10" />
                           <DropdownMenuItem 
                             onClick={() => handleDelete(quote.id)}
-                            className="text-red-600 focus:text-red-600"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                           >
                             <Trash2 size={16} className="mr-2" /> Supprimer
                           </DropdownMenuItem>
