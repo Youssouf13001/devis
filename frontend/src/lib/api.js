@@ -34,9 +34,10 @@ export const getQuote = (id) => axios.get(`${API}/quotes/${id}`, getAuthHeader()
 export const createQuote = (data) => axios.post(`${API}/quotes`, data, getAuthHeader());
 export const updateQuote = (id, data) => axios.put(`${API}/quotes/${id}`, data, getAuthHeader());
 export const deleteQuote = (id) => axios.delete(`${API}/quotes/${id}`, getAuthHeader());
-export const sendQuote = (id) => axios.post(`${API}/quotes/${id}/send`, {}, getAuthHeader());
+export const sendQuote = (id, message = null) => axios.post(`${API}/quotes/${id}/send`, { message }, getAuthHeader());
 export const getQuotePdf = (id) => axios.get(`${API}/quotes/${id}/pdf`, { ...getAuthHeader(), responseType: 'blob' });
 export const convertQuoteToInvoice = (id) => axios.post(`${API}/quotes/${id}/convert-to-invoice`, {}, getAuthHeader());
+export const getEmailPreview = (id) => axios.get(`${API}/quotes/${id}/email-preview`, getAuthHeader());
 
 // Invoices
 export const getInvoices = () => axios.get(`${API}/invoices`, getAuthHeader());
