@@ -131,6 +131,28 @@ const Quotes = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
+  const getReadStatus = (quote) => {
+    if (!quote.sent_at) return null;
+    
+    if (quote.opened_at) {
+      const openDate = new Date(quote.opened_at).toLocaleDateString('fr-FR');
+      const openTime = new Date(quote.opened_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      return (
+        <div className="flex items-center gap-1 text-emerald-600" title={`Ouvert ${quote.open_count || 1} fois - Dernière lecture: ${openDate} à ${openTime}`}>
+          <MailOpen size={16} />
+          <span className="text-xs">Lu ({quote.open_count || 1}x)</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-1 text-slate-400" title="Pas encore ouvert">
+        <Mail size={16} />
+        <span className="text-xs">Non lu</span>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
