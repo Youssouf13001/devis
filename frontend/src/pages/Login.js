@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
@@ -77,7 +77,16 @@ const Login = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300">Mot de passe</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-slate-300">Mot de passe</Label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-amber-400 hover:text-amber-300 transition-colors"
+                  data-testid="forgot-password-link"
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
