@@ -1091,7 +1091,7 @@ async def send_quote(quote_id: str, request: SendEmailRequest = None, user: dict
     pdf_bytes = generate_quote_pdf(quote, company)
     
     # Generate tracking URL
-    tracking_url = f"https://quotecreator-6.preview.emergentagent.com/api/track/{quote_id}/open.png"
+    tracking_url = f"https://quotehub-26.preview.emergentagent.com/api/track/{quote_id}/open.png"
     
     # Get custom message if provided
     custom_message = request.message if request else None

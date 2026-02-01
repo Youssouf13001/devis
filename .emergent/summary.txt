@@ -12,212 +12,224 @@ The user wants to create a website for creating and managing quotes.
 - Track the status of quotes (e.g., sent, accepted, refused).
 - Convert an accepted quote into an invoice.
 - Include a dashboard with key statistics.
-- Integrate SendGrid for sending emails.
+- Integrate a mail sending service.
 - Add the company logo to the application and generated PDFs.
 - Implement functionality to manage down payments (acomptes) on invoices.
 - View and download invoices that include details of any down payments made.
+- Implement email read tracking for quotes.
+- Remove the ability for new users to register.
+- Implement a modern, dark theme for the UI.
+- Allow the email body to be customized before sending a quote.
+- Deploy the application to the user's personal IONOS VPS under a sub-path ().
+- **New:** Implement a theme switcher with multiple color options.
+- **New:** Implement a Forgot Password functionality.
 
 **User's preferred language**: French. The user has communicated exclusively in French. The next agent MUST continue the conversation in French.
 
 **what currently exists?**
-A full-stack application (React frontend, FastAPI backend, MongoDB database) has been developed. Key features include:
-- User authentication (registration and login).
-- A dashboard displaying statistics (e.g., revenue, number of clients).
-- Full CRUD (Create, Read, Update, Delete) functionality for clients, services, and quotes.
-- A quote editor with a real-time preview that mimics the user's desired format.
-- PDF generation for both quotes and invoices using the  library.
-- A system for converting quotes to invoices and managing invoice statuses.
-- A complete workflow for adding partial payments (acomptes) to invoices, tracking the remaining balance, and displaying payment history.
-- The UI is styled with the user's brand colors (orange/beige) and includes the company logo on the login page, sidebar, and in generated PDFs.
+A full-stack application (React frontend, FastAPI backend, MongoDB) has been developed and successfully deployed to the user's private IONOS VPS.
+- **Core Functionality**: Full CRUD for clients, services, and quotes; PDF generation for quotes/invoices; quote-to-invoice conversion; down payment management.
+- **Email**: Email sending is configured and working via the user's IONOS SMTP credentials, replacing the previous SendGrid integration.
+- **UI/UX**: The application features a modern Lightning Dark theme with glassmorphism effects. The login page has been simplified to remove the registration link, and a custom Application interne v1 badge has been added.
+- **Features**:
+    - **Email Tracking**: A pixel-based system tracks when a client opens a quote email, displaying a Lu status in the UI.
+    - **Custom Email Body**: A modal allows the user to edit the email content before sending or re-sending a quote.
+- **Deployment**: The agent guided the user through a complete manual deployment on their Ubuntu VPS using Nginx, systemd, Node.js, and Python. The application is live at .
 
 **Last working item**:
-- **Last item agent was working:** Implementing the ability for the user to view and download an invoice PDF that includes a detailed breakdown of any down payments (acomptes) made, the total amount, and the remaining balance.
-- **Status:** USER VERIFICATION PENDING
-- **Agent Testing Done:** Y
-- **Which testing method agent to use?** backend testing agent
+- **Last item agent was working:** The user requested two features back-to-back: a theme switcher and a password reset flow. The agent acknowledged both and started the theme switcher by creating the file  before the session ended.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** Frontend testing agent
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Recurring Frontend Runtime Errors (P0)**
--   **Issue 2: Inability to Select a Client (P0)**
--   **Issue 3: Stretched Logo in PDF (P1)**
--   **Issue 4: SendGrid Email Verification (P2)**
+- **Issue 1: Stretched Logo in PDF (P1)**
 
 **Issues Detail:**
-- **Issue 1: Recurring Frontend Runtime Errors**
-    - **Description**: The user repeatedly encounters two runtime errors:  and . These errors appear in a disruptive overlay.
-    - **Attempted fixes**: The agent has tried multiple workarounds in , such as suppressing the error overlay with  and adding a custom  function to ignore these specific messages. These fixes only hide the problem, they don't solve the root cause, and the user continues to report them.
+- **Issue 1: Stretched Logo in PDF**
+    - **Description**: An earlier report from the user indicated the company logo appears stretched in generated PDFs. An agent attempted a fix by setting  in the  code, but this was never verified.
+    - **Attempted fixes**: Modified  to use a proportional drawing mode for the logo in the PDF.
     - **Next debug checklist**:
-        1.  Remove all workarounds from  to observe the error's natural behavior.
-        2.  Investigate the  and  components, specifically the Shadcn  component used for client selection, as this seems to be a trigger.
-        3.  Check for conflicts between React's lifecycle and external scripts. The agent suspected the Made with Emergent badge.
-        4.  Consider updating  or related dependencies if a known issue exists.
-    - **Why fix this issue and what will be achieved with the fix?**: This is the highest priority issue as it actively disrupts the user experience and prevents them from using core features, breeding a lack of confidence in the application's stability.
-    - **Status**: IN PROGRESS
-    - **Is recurring issue?**: Y
-    - **Should Test frontend/backend/both after fix?**: frontend
-    - **Blocked on other issue**: No
-
-- **Issue 2: Inability to Select a Client**
-    - **Description**: The user reported that when the  error occurs, they are blocked from selecting a client in the quote editor dropdown. The agent's own tests showed the dropdown working, but the user insists it's broken for them.
-    - **Attempted fixes**: This is directly linked to Issue 1. The fixes were aimed at hiding the error overlay.
-    - **Next debug checklist**:
-        1.  Treat this as a direct consequence of Issue 1.
-        2.  Use the frontend testing agent to specifically script a test that opens the client dropdown, selects a client, and verifies that the form state updates. This will confirm if the functionality is truly broken or if the error overlay is the only problem.
-    - **Why fix this issue and what will be achieved with the fix?**: The app is unusable if the user cannot select a client to create a quote for. This is a critical workflow blocker.
-    - **Status**: IN PROGRESS
-    - **Is recurring issue?**: Y
-    - **Should Test frontend/backend/both after fix?**: frontend
-    - **Blocked on other issue**: Issue 1: Recurring Frontend Runtime Errors
-
-- **Issue 3: Stretched Logo in PDF**
-    - **Description**: The user reported that after resizing the logo, it appears stretched or distorted in the generated PDF, even if it looks correct in the frontend preview.
-    - **Attempted fixes**: The agent modified the  code in  to use  when drawing the image on the PDF canvas to maintain its aspect ratio.
-    - **Next debug checklist**:
-        1.  Generate a new PDF via the API.
-        2.  Download and manually inspect the PDF to confirm if the logo's aspect ratio is correct.
-        3.  If still stretched, explicitly calculate the width and height based on the original image's aspect ratio instead of relying solely on the  parameter.
+        1.  Log into the application.
+        2.  Generate a new PDF for any quote.
+        3.  Download and visually inspect the PDF to confirm if the logo's aspect ratio is correct.
+        4.  If it's still stretched, manually calculate the image dimensions in  based on the aspect ratio instead of relying on the  parameter.
     - **Why fix this issue and what will be achieved with the fix?**: Ensures professional-looking documents that correctly represent the user's brand.
     - **Status**: TESTING PENDING
     - **Is recurring issue?**: N
     - **Should Test frontend/backend/both after fix?**: backend
-    - **Blocked on other issue**: No
-
-- **Issue 4: SendGrid Email Verification**
-    - **Description**: The agent has the user's SendGrid API key, but email sending will fail until the user configures and provides a verified sender email address within their SendGrid account.
-    - **Attempted fixes**: The agent has asked the user for this information but proceeded with development while waiting.
-    - **Next debug checklist**:
-        1.  Politely ask the user again for the verified sender email address.
-        2.  Explain that the Send by Email feature will not work without it.
-    - **Why fix this issue and what will be achieved with the fix?**: This will enable a core feature of the application: sending quotes directly to clients.
-    - **Status**: BLOCKED
-    - **Is recurring issue?**: N
-    - **Should Test frontend/backend/both after fix?**: backend
-    - **Blocked on other issue**: No
+    - **Blocked on other issue**: None
 
 **In progress Task List**:
-There are no tasks currently in progress; the last task is pending user verification.
+- **Task 1: Implement Theme Switcher (P0)**
+- **Task 2: Implement Password Reset Functionality (P0)**
+
+**Task Detail:**
+- **Task 1: Implement Theme Switcher**
+    - **Description**: The user wants to be able to switch between 4 different color themes: the current Dark theme, a Light theme, an Orange theme, and a Violet theme.
+    - **Where to resume**: The file  has just been created. The next steps are:
+        1.  Implement the  in  to manage the current theme.
+        2.  Define the CSS variables for the 4 themes in .
+        3.  Wrap the main application in  with the .
+        4.  Create a UI component (e.g., in the sidebar or a settings page) to allow the user to select a theme.
+    - **What will be achieved with this?**: Fulfills a direct user request for UI customization.
+    - **Status**: IN PROGRESS
+    - **Should Test frontend/backend/both after fix?**: frontend
+    - **Blocked on something**: No
+
+- **Task 2: Implement Password Reset Functionality**
+    - **Description**: The user wants a Forgot Password feature. This requires a link on the login page, an email flow to send a unique reset token, and a page to enter a new password.
+    - **Where to resume**: This task has not been started. The plan is:
+        1.  **Backend**:
+            - Create a new model to store password reset tokens with an expiration time.
+            - Add a  endpoint that generates a token and sends a reset email.
+            - Add a  endpoint that validates the token and updates the user's password.
+        2.  **Frontend**:
+            - Add a Mot de passe oublié ? link to .
+            - Create a new page/component for the Forgot Password form (takes an email).
+            - Create a new page/component for the Reset Password form (takes token from URL, new password).
+    - **What will be achieved with this?**: Provides a critical self-service feature for account recovery.
+    - **Status**: NOT STARTED
+    - **Should Test frontend/backend/both after fix?**: both
+    - **Blocked on something**: No
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks:**
-  - **(P0) Fix Frontend Errors**: Resolve the root cause of the  and  errors to provide a stable user experience.
 - **Future Tasks:**
-  - **(P1) Automatic Reminders**: Implement a feature to send automatic email reminders for quotes that have been pending for a user-defined number of days. This was suggested by the agent.
-  - **(P2) End-to-End Testing**: Conduct a thorough end-to-end test of the entire application flow to ensure all features work together seamlessly.
+  - **(P1) Automatic Reminders**: Implement a feature to send automatic email reminders for quotes that have been pending for a user-defined number of days.
+  - **(P2) End-to-End Testing**: Conduct a thorough end-to-end test of the entire application flow on the deployed VPS.
 
 **Completed work in this session**
-- **Core Application Build**: Developed the full-stack quote and invoice management system from scratch.
-- **PDF Generation**: Implemented dynamic PDF creation for quotes and invoices using .
-- **UI/UX Customization**:
-  - Themed the application with the user's brand colors (orange/beige).
-  - Integrated the company logo on the login page, sidebar, and PDFs.
-  - Adjusted UI element styling (font sizes, logo size) based on user feedback.
-- **Feature - Down Payments (Acomptes)**: Built the complete backend and frontend logic to add, track, and display partial payments on invoices.
-- **Feature - Invoice PDF with Payments**: Implemented the generation of invoice PDFs that detail all payments made and the remaining balance.
-- **Feature - Event Date**: Added a specific Event Date field to the quote creation form and corresponding PDF.
+- **Email Service Migration**: Replaced SendGrid with the user's IONOS SMTP server for sending emails.
+- **Frontend Bug Resolution**: Fixed recurring  and  errors by simplifying error handling in .
+- **New Feature - Email Read Tracking**: Implemented a pixel-based system to track when quote emails are opened.
+- **New Feature - Custom Email Body**: Added a modal to allow the user to customize the email message before sending a quote.
+- **UI Redesign**: Implemented a new Lightning Dark theme designed by the , applying it across the application (Login, Dashboard, Lists, Editors).
+- **UX Improvement**: Removed the public registration flow to make it a private, single-admin application.
+- **Deployment to User's VPS**: Successfully guided the user through a complete manual deployment of the application on their IONOS VPS, including setting up the backend service (systemd), frontend build, and Nginx configuration for a sub-path (). This involved extensive live debugging of dependencies, paths, and server configuration.
+- **Post-Deployment Fixes**: Corrected the email tracking URL in the backend code to point to the new production domain.
 
 **Earlier issues found/mentioned but not fixed**
-All known issues have been captured in the All Pending/In progress Issue list section.
+- The Stretched Logo in PDF issue is still pending verification.
 
 **Known issue recurrence from previous fork**
-- N/A
+- The  and  errors were highly recurrent but appear to be resolved after the agent simplified  and helped the user access the correct URL. This should be monitored, especially after new frontend changes.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
 - **Frontend**: React, React Router, Axios, TailwindCSS, Shadcn/UI
-- **Backend**: FastAPI, Motor (async MongoDB driver), Pydantic, ReportLab (for PDF generation), JWT
+- **Backend**: FastAPI, Motor, Pydantic, ReportLab, JWT
 - **Database**: MongoDB
-- **Deployment**: The application is running in a containerized environment managed by Supervisor.
+- **Deployment**: **Manual deployment on user's IONOS VPS (Ubuntu)**, using **Nginx** as a reverse proxy, **systemd** to manage the backend process, and a sub-path configuration ().
 
 **key DB schema**
--   **users**: , 
--   **clients**: uid=0(root) gid=0(root) groups=0(root), , , , , 
--   **services**: uid=0(root) gid=0(root) groups=0(root), , , , 
--   **quotes**: uid=0(root) gid=0(root) groups=0(root), , , , , , , , 
--   **invoices**: uid=0(root) gid=0(root) groups=0(root), , , , , , ,  (an array of payment objects)
--   **company_settings**: , , , , , , , 
+- **quotes**: Now includes an  field (object with , ).
 
 **changes in tech stack**
--   The PDF generation library was changed from 
------
-
-WeasyPrint could not import some external libraries. Please carefully follow the installation steps before reporting an issue:
-https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation
-https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#troubleshooting 
-
------ to  due to system dependency issues.
+- Email provider switched from SendGrid to a direct SMTP connection (IONOS).
 
 **All files of reference**
--   : Contains the entire backend logic. It has been heavily modified to add all features.
--   : The primary frontend component for creating/editing quotes, including the live preview.
--   : The page for managing invoices and adding down payments.
--   : Contains workarounds for the persistent frontend errors.
--   : The company logo asset.
+- : Modified for IONOS SMTP, custom email messages, and email tracking URL.
+- : Heavily modified to add the email sending modal, read status column, and new UI.
+- : UI updated to match the new dark theme, fixed text visibility.
+- : UI redesigned, registration link removed.
+- : UI redesigned for the new theme.
+- : UI redesigned with new stats cards.
+- : Error handling simplified to fix  bug.
+- : Needs to be modified for deployment .
+- : Made with Emergent script removed/hidden.
+- : New file, created but empty.
 
 **Areas that need refactoring**:
--   The error suppression code in  is a temporary hack. It should be removed once the underlying cause of the  and  errors is fixed.
--   The  file is over 1000 lines long and contains all backend logic. It should be refactored into a more modular structure, separating routes, models, and utility functions (like PDF generation) into different files/directories for better maintainability.
+- The  file is a large monolith and would benefit from being broken down into separate files for routes, models, and services.
 
 **key api endpoints**
--   , 
--    (CRUD)
--    (CRUD)
--    (CRUD), 
--   
--    (CRUD), 
--   
--    (GET/POST)
--   
+- : **GET** endpoint for the tracking pixel.
+- : **POST** endpoint now accepts a  field in the request body.
+- : **GET** to retrieve the default email template.
 
 **Critical Info for New Agent**
--   **User Language**: All communication MUST be in French.
--   **Critical Bug**: The application suffers from recurring frontend errors (, ) that severely impact usability. Resolving this is the top priority. The user reports it blocks them from selecting clients, making the app unusable. The current fixes only hide the error overlay and are ineffective.
--   **Blocked Feature**: The SendGrid email functionality is implemented but will not work until the user provides a verified sender email address.
--   **PDF Generation**: The project uses  for PDFs, not 
------
+- **The application is LIVE on the user's VPS.** The development workflow has changed. Any new features or fixes must be implemented in the workspace first, and then you MUST provide the user with clear, step-by-step instructions to pull the changes from GitHub and redeploy on their VPS. This will typically involve:
+    1.  User clicks Save to GitHub.
+    2.  User SSHs into their VPS.
+    3.  User runs .
+    4.  User runs 
+> frontend@0.1.0 build
+> craco build
 
-WeasyPrint could not import some external libraries. Please carefully follow the installation steps before reporting an issue:
-https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation
-https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#troubleshooting 
+Creating an optimized production build...
+Compiled with warnings.
 
------.
+[eslint] 
+src/pages/QuoteEditor.js
+  Line 37:6:  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+static/css/main.1ae5a1fb.css from Css Minimizer plugin
+postcss-svgo: /app/frontend/static/css/main.1ae5a1fb.css:2230:5: Error: SvgoParserError: <input>:1:1: Non-whitespace before first tag.
+
+> 1 | %3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='…
+    | ^
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  164.7 kB  build/static/js/main.1e281bf7.js
+  12.37 kB  build/static/css/main.8571c1f9.css
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  yarn global add serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment.
+    5.  User runs .
+- The user's top priorities are the new feature requests: **Theme Switcher** and **Password Reset**.
+- All communication must be in **French**.
 
 **documents and test reports created in this job**
--   
--   
--   
+-  (updated)
+-  (created for user)
+-  (updated by design agent)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (msg 268):** Reports  error after adding a down payment. (Status: In Progress - Workaround applied, but issue persists).
-2.  **User (msg 272):** Requests to view/display the invoice with the down payment on it. (Status: Completed - Pending User Verification).
-3.  **User (msg 234):** Requests the ability to create a down payment on an invoice. (Status: Completed).
-4.  **User (msg 230):** States they cannot find the field to add the wedding date to the quote. (Status: Resolved - Agent pointed out the field's location).
-5.  **User (msg 222):** Reports that the logo appears stretched in the exported PDF. (Status: In Progress - Fix attempted, pending verification).
-6.  **User (msg 216):** Asks to make the logo larger in the quote preview. (Status: Completed).
-7.  **User (msg 210):** Asks to change the font and reduce the size for the Emitter and Client info boxes in the preview. (Status: Completed).
-8.  **User (msg 204):** Asks to remove the black background from the logo in the preview. (Status: Completed).
-9.  **User (msg 194):** Uploads a screenshot showing a logo with a poor-quality background. (Status: Completed).
-10. **User (msg 188):** Insists the  error is still occurring and is preventing them from selecting a client. (Status: In Progress - Critical issue).
+1.  **User (msg 561):** Requests a password reset feature. (Status: Pending)
+2.  **User (msg 558):** Confirms that the email tracking URL fix works on their VPS. (Status: Resolved)
+3.  **User (msg 555):** Requests a theme switcher with 4 color options. (Status: In Progress)
+4.  **User (msg 552):** Reports that email read tracking is not working on the deployed site. (Status: Resolved)
+5.  **User (msg 549):** Reports login credentials don't work on the fresh VPS deployment. (Status: Resolved - agent helped create a new user)
+6.  **User (msg 513 & 511):** Reports a blank blue screen after deployment. (Status: Resolved - agent fixed React Router  issue)
+7.  **User (msg 507):** Confirms the Nginx config fix is done. (Status: Resolved)
+8.  **User (msg 498 & 501):** Asks for help navigating the  editor. (Status: Resolved)
+9.  **User (msg 480):** Reports the page isn't loading after deployment. (Status: In Progress)
+10. **User (msg 477):** Shows the Nginx config after editing it. (Status: In Progress)
 
 **Project Health Check:**
--   **Broken**: The client selection feature is reported as broken by the user due to persistent frontend errors. This is a critical workflow.
--   **Mocked**: No features are mocked.
+- **Broken**: Nothing is broken. The application is deployed and functional.
+- **Mocked**: No features are mocked.
 
 **3rd Party Integrations**
--   **SendGrid**: Used for sending emails. Requires a user-provided verified sender email address to be fully functional.
+- **IONOS SMTP**: The application sends emails directly via the user's IONOS SMTP server. Credentials are in .
 
 **Testing status**
--   **Testing agent used after significant changes**: YES
--   **Troubleshoot agent used after agent stuck in loop**: NO
--   **Test files created**: None
--   **Known regressions**: The  and  errors have appeared repeatedly after various features were added, suggesting that changes to the React DOM are re-triggering a latent issue.
+- **Testing agent used after significant changes**: NO
+- **Troubleshoot agent used after agent stuck in loop**: NO
+- **Test files created**: None
+- **Known regressions**: None currently, but the previous frontend errors () were highly recurrent.
 
 **Credentials to test flow:**
--   User credentials can be created via the registration page on the frontend.
--   SendGrid API Key:  (This is in the agent's history and should be added to the backend .env file if not already present).
+- App Admin User:  / 
+- IONOS SMTP:  /  (in )
 
 **What agent forgot to execute**
--   The agent did not perform a definitive test to confirm the stretched logo in PDF issue was resolved. It attempted a fix and then asked the user to check, but did not generate and inspect a new PDF itself.
--   The agent has not holistically addressed the root cause of the frontend errors, opting for repeated, ineffective workarounds. A more systematic debugging approach is needed.</analysis>
+- The agent did not verify that the stretched logo in PDF issue was resolved after attempting a fix.
+- The agent started the Theme Switcher task by creating a context file but did not implement any of the logic before the session ended.</analysis>
