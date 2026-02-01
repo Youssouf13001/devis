@@ -98,12 +98,6 @@ const Login = () => {
                   {loading ? "Connexion..." : "Se connecter"}
                 </Button>
               </form>
-              <p className="mt-6 text-center text-slate-500">
-                Pas encore de compte ?{" "}
-                <Link to="/register" className="text-slate-900 font-semibold hover:underline">
-                  Créer un compte
-                </Link>
-              </p>
             </CardContent>
           </Card>
         </div>
