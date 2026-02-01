@@ -186,6 +186,8 @@ class QuoteResponse(BaseModel):
     status: str
     created_at: str
     sent_at: Optional[str] = None
+    opened_at: Optional[str] = None
+    open_count: int = 0
 
 class InvoiceResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
