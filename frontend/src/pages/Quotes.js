@@ -107,16 +107,6 @@ const Quotes = () => {
     }
   };
 
-  const handleSend = async (id) => {
-    try {
-      await sendQuote(id);
-      toast.success("Devis envoyé par email");
-      loadQuotes();
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Erreur lors de l'envoi");
-    }
-  };
-
   const handleDownloadPdf = async (id, clientName, quoteNumber) => {
     try {
       const response = await getQuotePdf(id);
