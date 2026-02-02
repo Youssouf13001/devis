@@ -83,7 +83,7 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/devis">
         <Toaster position="top-right" richColors />
         <CustomBadge />
         <Routes>
