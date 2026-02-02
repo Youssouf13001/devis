@@ -17,12 +17,17 @@ Créer un site de création de devis permettant:
 - **PDF**: ReportLab pour génération PDF
 - **Email**: SMTP IONOS (smtp.ionos.fr:465 SSL/TLS) ✅
 - **Auth**: JWT avec bcrypt
+- **Déploiement**: VPS IONOS (creativindustry.com/devis) via Nginx + systemd
 
 ## Fonctionnalités Implémentées ✅
 
 ### Authentification
 - [x] Inscription/Connexion JWT
 - [x] Gestion de session avec token
+- [x] **Réinitialisation mot de passe** (NEW - 1er Feb 2026)
+  - Lien "Mot de passe oublié ?" sur la page de connexion
+  - Email avec token de réinitialisation (expire 1h)
+  - Page de définition du nouveau mot de passe
 
 ### Dashboard
 - [x] Statistiques (total devis, envoyés, acceptés, refusés)
@@ -78,11 +83,22 @@ SMTP_PASSWORD=Soleil13...
 ### P1 (Important)
 - [ ] Rappel automatique devis expirés
 - [ ] Historique des envois d'email
+- [ ] Vérifier le logo étiré dans les PDF (fix tenté mais non vérifié)
 
 ### P2 (Nice to have)
 - [ ] Templates de devis personnalisables
 - [ ] Multi-devises
 - [ ] Import/Export CSV
 
+## Instructions de Déploiement VPS
+Après modification du code:
+```bash
+# Sur le VPS via SSH
+cd /var/www/devis
+git pull
+cd frontend && npm run build
+sudo systemctl restart devis-api
+```
+
 ## Dernière mise à jour
-31 janvier 2026 - Email IONOS testé et fonctionnel ✅
+1er février 2026 - Réinitialisation mot de passe implémentée ✅
