@@ -80,8 +80,7 @@ if (process.env.NODE_ENV === 'development') {
 // ============================================
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// NOTE: StrictMode removed to fix intermittent "insertBefore" DOM errors
+// in production builds. This error occurs due to race conditions when
+// React double-renders components during navigation.
+root.render(<App />);
