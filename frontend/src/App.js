@@ -44,11 +44,20 @@ const CustomBadge = () => (
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const [shouldRender, setShouldRender] = useState(false);
   
-  if (loading) {
+  useEffect(() => {
+    if (!loading) {
+      // Small delay to prevent race conditions during navigation
+      const timer = setTimeout(() => setShouldRender(true), 10);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+  
+  if (loading || !shouldRender) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#020617]">
+        <div className="w-10 h-10 border-3 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -57,16 +66,25 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
 
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  const [shouldRender, setShouldRender] = useState(false);
   
-  if (loading) {
+  useEffect(() => {
+    if (!loading) {
+      // Small delay to prevent race conditions during navigation
+      const timer = setTimeout(() => setShouldRender(true), 10);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+  
+  if (loading || !shouldRender) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#020617]">
+        <div className="w-10 h-10 border-3 border-amber-500/30 border-t-amber-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -75,7 +93,7 @@ const PublicRoute = ({ children }) => {
     return <Navigate to="/dashboard" replace />;
   }
   
-  return children;
+  return <>{children}</>;
 };
 
 function App() {
